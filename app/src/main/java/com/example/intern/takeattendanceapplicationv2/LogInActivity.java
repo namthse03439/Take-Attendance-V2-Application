@@ -82,19 +82,17 @@ public class LogInActivity extends AppCompatActivity {
             builder.create().show();
         }
 
-        if (isNetworkAvailable())
-        {
-            SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
-            String auCode = pref.getString("authorizationCode", null);
-            if(auCode != null && auCode != "{\"password\":[\"Incorrect username or password.\"]}"){
-                Intent intent = new Intent(this, MainActivity.class);
-                startActivity(intent);
-            }
-            else {
-                Intent intent = new Intent(this, LogInActivity.class);
-                startActivity(intent);
-            }
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+        if(auCode != null && auCode != "{\"password\":[\"Incorrect username or password.\"]}"){
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
         }
+        else {
+            Intent intent = new Intent(this, LogInActivity.class);
+            startActivity(intent);
+        }
+
     }
 
     private boolean isNetworkAvailable() {

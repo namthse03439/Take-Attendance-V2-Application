@@ -1,11 +1,14 @@
 package com.example.intern.takeattendanceapplicationv2.Fragment;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TableLayout;
@@ -91,7 +94,18 @@ public class TakeAttendanceToday extends Fragment {
         textTime = (TextView) myView.findViewById(R.id.text_Time);
         textTime.setText(stringTime);
 
-        return inflater.inflate(R.layout.fragment_take_attendance_today, container, false);
+        return myView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_takeattendancetitle, menu);
+        ActionBar actionBar = context.getActionBar();
+        if(actionBar != null){
+            actionBar.setDisplayShowTitleEnabled(true);
+            actionBar.setTitle(getString(R.string.title_fragment_take_attendance));
+        }
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
