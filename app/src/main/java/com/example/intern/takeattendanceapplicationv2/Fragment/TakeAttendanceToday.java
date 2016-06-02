@@ -1,5 +1,6 @@
 package com.example.intern.takeattendanceapplicationv2.Fragment;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -40,6 +41,8 @@ public class TakeAttendanceToday extends Fragment {
 
     private View myView;
 
+    private Activity context;
+
     private OnFragmentInteractionListener mListener;
 
     public TakeAttendanceToday() {
@@ -71,6 +74,8 @@ public class TakeAttendanceToday extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        context = this.getActivity();
     }
 
     @Override

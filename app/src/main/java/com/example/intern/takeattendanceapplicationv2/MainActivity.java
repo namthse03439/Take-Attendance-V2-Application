@@ -19,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.example.intern.takeattendanceapplicationv2.Fragment.TakeAttendanceToday;
+import com.example.intern.takeattendanceapplicationv2.Fragment.TrainingFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
             case 1:{
-//                fragment = new LocationFragment();
+                fragment = new TrainingFragment();
                 break;
             }
             case 2:{
