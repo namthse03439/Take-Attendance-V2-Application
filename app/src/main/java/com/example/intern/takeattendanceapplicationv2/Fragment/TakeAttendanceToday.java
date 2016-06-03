@@ -6,18 +6,23 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.example.intern.takeattendanceapplicationv2.Information.ScheduleManager;
 import com.example.intern.takeattendanceapplicationv2.R;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 
 /**
@@ -39,7 +44,7 @@ public class TakeAttendanceToday extends Fragment {
     private String mParam2;
 
     private Calendar calendar;
-    private TableLayout[] tls = new TableLayout[4];
+    private TableLayout[] tls = new TableLayout[3];
     TextView textTime;
 
     private View myView;
@@ -81,18 +86,47 @@ public class TakeAttendanceToday extends Fragment {
         context = this.getActivity();
     }
 
+    private void getTableLayout()
+    {
+        tls[0] = (TableLayout) myView.findViewById(R.id.tableLayout1);
+        tls[1] = (TableLayout) myView.findViewById(R.id.tableLayout2);
+        tls[2] = (TableLayout) myView.findViewById(R.id.tableLayout3);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         myView = inflater.inflate(R.layout.fragment_take_attendance_today, container, false);
 
+        //+ Set time view
         calendar = Calendar.getInstance();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, MM_dd_yyyy");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, MM/dd/yyyy");
         String stringTime = simpleDateFormat.format(calendar.getTime());
 
         textTime = (TextView) myView.findViewById(R.id.text_Time);
         textTime.setText(stringTime);
+        //- Set time view
+
+        //+ Add time to table
+        getTableLayout();
+        for(int i = 0; i < ScheduleManager.timeNumber; i++)
+        {
+            List<String> values = new ArrayList<>();
+            values.add(ScheduleManager.dailyTime[i]);
+
+            TextView tvs = new TextView(context);
+            tvs.setGravity(Gravity.CENTER);
+
+            tvs.setText(values.get(0));
+            tvs.setLines(4);
+
+            TableRow trs = new TableRow(context);
+            trs.addView(tvs);
+
+            tls[0].addView(trs);
+        }
+        //- Add time to table
 
         return myView;
     }

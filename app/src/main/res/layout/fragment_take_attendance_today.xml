@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:textSize="25dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Friday, November 13th 2016"
+            android:text="Friday, 06/03/2016"
             android:id="@+id/text_Time"
             android:layout_margin="1dp"
             android:layout_alignParentTop="true"
@@ -42,7 +42,7 @@
                 <TableLayout
                     android:orientation="vertical"
                     android:layout_margin="1dp"
-                    android:layout_weight="108"
+                    android:layout_weight="60"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -61,7 +61,7 @@
                 <TableLayout
                     android:orientation="vertical"
                     android:layout_margin="1dp"
-                    android:layout_weight="100"
+                    android:layout_weight="30"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -73,40 +73,20 @@
                             android:layout_weight="4"
                             android:lines="2"
                             android:background="@android:color/holo_blue_light"
-                            android:text="Subject code" />
+                            android:text="Subject Information" />
                     </TableRow>
                 </TableLayout>
 
                 <TableLayout
                     android:orientation="vertical"
                     android:layout_margin="1dp"
-                    android:layout_weight="85"
+                    android:layout_weight="63"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                     <TableRow>
-
                         <TextView
                             android:id="@+id/header3"
-                            android:textColor="@android:color/white"
-                            android:gravity="center"
-                            android:layout_weight="3"
-                            android:lines="2"
-                            android:background="@android:color/holo_blue_light"
-                            android:text="Location" />
-                    </TableRow>
-                </TableLayout>
-
-                <TableLayout
-                    android:orientation="vertical"
-                    android:layout_margin="1dp"
-                    android:layout_weight="100"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <TableRow>
-                        <TextView
-                            android:id="@+id/header4"
                             android:textColor="@android:color/white"
                             android:layout_weight="3"
                             android:background="@android:color/holo_blue_light"
@@ -158,7 +138,7 @@
                     android:id="@+id/tableLayout1"
                     android:orientation="vertical"
                     android:layout_margin="1dp"
-                    android:layout_weight="108"
+                    android:layout_weight="60"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 </TableLayout>
@@ -167,7 +147,7 @@
                     android:id="@+id/tableLayout2"
                     android:orientation="vertical"
                     android:layout_margin="1dp"
-                    android:layout_weight="100"
+                    android:layout_weight="30"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 </TableLayout>
@@ -176,20 +156,11 @@
                     android:id="@+id/tableLayout3"
                     android:orientation="vertical"
                     android:layout_margin="1dp"
-                    android:layout_weight="85"
+                    android:layout_weight="63"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="2">
-                </TableLayout>
-
-                <TableLayout
-                    android:id="@+id/tableLayout4"
-                    android:orientation="vertical"
-                    android:layout_margin="1dp"
-                    android:layout_weight="100"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
                 </TableLayout>
 
             </LinearLayout>

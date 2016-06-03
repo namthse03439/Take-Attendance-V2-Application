@@ -44,6 +44,14 @@ public class LogInActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
+
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+        if(auCode != null && auCode != "{\"password\":[\"Incorrect username or password.\"]}"){
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+        }
+
         ButterKnife.inject(this);
 
         _loginButton.setOnClickListener(new View.OnClickListener() {
@@ -81,18 +89,6 @@ public class LogInActivity extends AppCompatActivity {
 
             builder.create().show();
         }
-
-        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
-        String auCode = pref.getString("authorizationCode", null);
-        if(auCode != null && auCode != "{\"password\":[\"Incorrect username or password.\"]}"){
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
-        }
-        else {
-            Intent intent = new Intent(this, LogInActivity.class);
-            startActivity(intent);
-        }
-
     }
 
     private boolean isNetworkAvailable() {
