@@ -119,7 +119,7 @@ public class TakeAttendanceToday extends Fragment {
             tvs.setGravity(Gravity.CENTER);
 
             tvs.setText(values.get(0));
-            tvs.setLines(4);
+            tvs.setLines(5);
 
             TableRow trs = new TableRow(context);
             trs.addView(tvs);
