@@ -35,6 +35,11 @@ public class MainActivity extends AppCompatActivity
     private CharSequence mTitle;
 
     @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
