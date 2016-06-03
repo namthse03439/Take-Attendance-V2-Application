@@ -46,6 +46,13 @@ public class LogInActivity extends AppCompatActivity {
         setContentView(R.layout.activity_log_in);
         ButterKnife.inject(this);
 
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+        if(auCode != null && auCode != "{\"password\":[\"Incorrect username or password.\"]}"){
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+        }
+
         _loginButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -80,17 +87,6 @@ public class LogInActivity extends AppCompatActivity {
                     });
 
             builder.create().show();
-        }
-
-        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
-        String auCode = pref.getString("authorizationCode", null);
-        if(auCode != null && auCode != "{\"password\":[\"Incorrect username or password.\"]}"){
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
-        }
-        else {
-            Intent intent = new Intent(this, LogInActivity.class);
-            startActivity(intent);
         }
 
     }
