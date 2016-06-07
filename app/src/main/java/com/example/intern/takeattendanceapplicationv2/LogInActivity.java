@@ -55,7 +55,6 @@ public class LogInActivity extends AppCompatActivity {
         ButterKnife.inject(this);
 
         _loginButton.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 login();
