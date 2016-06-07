@@ -1,6 +1,8 @@
 package com.example.intern.takeattendanceapplicationv2;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -18,8 +20,18 @@ import android.support.v4.widget.DrawerLayout;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
 import com.example.intern.takeattendanceapplicationv2.Fragment.TakeAttendanceToday;
 import com.example.intern.takeattendanceapplicationv2.Fragment.TrainingFragment;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -47,6 +59,13 @@ public class MainActivity extends AppCompatActivity
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
+
+        //===============
+
+//        loadTimetableByWeek();
+        loadFullTimetable();
+
+        //---------------
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
@@ -176,6 +195,71 @@ public class MainActivity extends AppCompatActivity
             super.onAttach(activity);
             ((MainActivity) activity).onSectionAttached(
                     getArguments().getInt(ARG_SECTION_NUMBER));
+        }
+    }
+
+    void loadTimetableByWeek(){
+
+        try {
+            SharedPreferences pref = this.getSharedPreferences("ATK_pref", 0);
+            String auCode = pref.getString("authorizationCode", null);
+
+            StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+            Call<ResponseBody> call = client.getTimetableByWeek();
+
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    try {
+                        JSONObject data = new JSONObject(response.body().string());
+                        System.out.print("OK!");
+                    }
+                    catch (Exception e){
+                        System.out.print("Failed!");
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                }
+            });
+
+        }
+        catch(Exception e){
+            System.out.print("load timetable by week exception!");
+        }
+    }
+
+    void loadFullTimetable(){
+        try {
+            SharedPreferences pref = this.getSharedPreferences("ATK_pref", 0);
+            String auCode = pref.getString("authorizationCode", null);
+
+            StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+            Call<ResponseBody> call = client.getFullTimetable();
+
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    try {
+                        JSONObject data = new JSONObject(response.body().string());
+                        System.out.print("OK!");
+                    }
+                    catch (Exception e){
+                        System.out.print("Failed!");
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                }
+            });
+
+        }
+        catch(Exception e){
+            System.out.print("load timetable by week exception!");
         }
     }
 
