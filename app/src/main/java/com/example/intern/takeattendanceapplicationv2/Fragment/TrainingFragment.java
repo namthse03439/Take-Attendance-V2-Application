@@ -1,24 +1,41 @@
 package com.example.intern.takeattendanceapplicationv2.Fragment;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
 import com.example.intern.takeattendanceapplicationv2.R;
+import com.facepp.http.HttpRequests;
+import com.facepp.http.PostParameters;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -172,11 +189,11 @@ public class TrainingFragment extends Fragment {
             progressDialog.setMessage("Image is sending to server...");
             progressDialog.show();
 
-            // send image to server - Tung's part
+            // =============================
+            // TODO: Tung: complete this function
+//            trainingFunction();
 
-
-
-            // end Tung's part
+            // -----------------------------
 
             new android.os.Handler().postDelayed(
                     new Runnable() {
@@ -188,5 +205,150 @@ public class TrainingFragment extends Fragment {
                         }
                     }, 3000);
         }
+
+    }
+    void trainingFunction() {
+        HttpRequests httpRequests = new HttpRequests(GlobalVariable.apiKey, GlobalVariable.apiSecret);
+        File imgFile = new File(mCurrentPhotoPath);
+
+        SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        String newFaceID = get1FaceID(httpRequests, imgFile);
+        String personID = getThisPersonID(auCode);
+
+        if(personID != null){ //this person has been trained before
+
+            JSONArray faceIDList = getThisFaceIDList(auCode);
+            faceIDList = substitute1FacefromPerson(httpRequests, personID, faceIDList, newFaceID);
+            postFaceIDListtoLocalServer(auCode, faceIDList);
+        }
+        else{
+            personID = create1Person(httpRequests, imgFile);
+
+        }
+
+    }
+
+    String create1Person(HttpRequests httpRequests, File imgFile){
+        String personID = null;
+
+        try {
+            String faceID = get1FaceID(httpRequests, imgFile);
+            PostParameters postParameters = new PostParameters().setFaceId(faceID);
+            JSONObject person = httpRequests.personCreate(postParameters);
+            personID = person.getString("person_id");
+
+            postParameters = new PostParameters().setPersonId(personID);
+            httpRequests.trainVerify(postParameters);
+        }
+        catch (Exception e){
+            System.out.print("Caught!");
+        }
+
+        return personID;
+    }
+
+    void postFaceIDListtoLocalServer(String auCode, JSONArray faceIDList){
+        try {
+            StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+            Call<ResponseBody> call = client.postFaceIDList(faceIDList);
+            Response<ResponseBody> response = call.execute();
+            int messageCode = response.code();
+            if(messageCode != 200){
+                //TODO: show error
+            }
+        }
+        catch(Exception e){
+            System.out.print("post faceIDList to server exception!");
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    JSONArray substitute1FacefromPerson(HttpRequests httpRequests, String personID, JSONArray faceIDList, String newFaceID){
+
+        try{
+
+            // get the earliest faceID in the list, that is the faceID with index 0
+            if(faceIDList.length() == GlobalVariable.maxLengthFaceList){
+                String oldFaceID = faceIDList.getString(0);
+                // remove it on Face++
+                PostParameters postParameters = new PostParameters().setPersonId(personID).setFaceId(oldFaceID);
+                httpRequests.personRemoveFace(postParameters);
+                // remove it on the list
+                faceIDList.remove(0);
+            }
+
+            // add 1 face on Face++
+            PostParameters postParameters = new PostParameters().setPersonId(personID).setFaceId(newFaceID);
+            httpRequests.personAddFace(postParameters);
+            // add 1 face on the list
+            faceIDList.put(faceIDList.length(), newFaceID);
+
+            //re-train person on Face++
+            postParameters = new PostParameters().setPersonId(personID);
+            httpRequests.trainVerify(postParameters);
+
+            return faceIDList;
+
+        }
+        catch(Exception e){
+            System.out.print("Caught!");
+        }
+
+        return null;
+    }
+
+    JSONArray getThisFaceIDList(String auCode){
+
+        JSONArray result = null;
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+        Call<ResponseBody> call = client.getFaceIDList();
+
+        try{
+            Response<ResponseBody> response = call.execute();
+            JSONObject data = new JSONObject(response.body().string());
+            result = data.getJSONArray("face_id");
+
+        }
+        catch(Exception e){
+            System.out.print("Error get this faceID list");
+        }
+
+        return result;
+
+    }
+
+    String getThisPersonID(String auCode){
+
+        String personID = null;
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+        Call<ResponseBody> call = client.getPersonID();
+
+        try {
+            Response<ResponseBody> response = call.execute();
+            JSONObject data = new JSONObject(response.body().string());
+            personID = data.getString("person_id");
+        }
+        catch(Exception e){
+            System.out.print("Error get this personID");
+        }
+
+        return personID;
+    }
+
+    String get1FaceID(HttpRequests httpRequests, File imgFile){
+        String faceID = null;
+        try {
+            PostParameters postParameters = new PostParameters().setImg(imgFile).setMode("oneface");
+            JSONObject faceResult = httpRequests.detectionDetect(postParameters);
+            faceID = faceResult.getJSONArray("face").getJSONObject(0).getString("face_id");
+        }
+        catch(Exception e){
+            System.out.print("Get FaceID failed!");
+        }
+        return faceID;
     }
 }

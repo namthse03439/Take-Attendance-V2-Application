@@ -1,5 +1,7 @@
 package com.example.intern.takeattendanceapplicationv2.BaseClass;
 
+import org.json.JSONArray;
+
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -29,6 +31,24 @@ public interface StringClient {
 
     @POST("user/signup")
     Call<ResponseBody> signup(@Body SignupClass user);
+
+    @GET("user/person-id")
+    Call<ResponseBody> getPersonID();
+
+    @GET("user/face-id")
+    Call<ResponseBody> getFaceIDList();
+
+    @POST("user/set-face-id")
+    Call<ResponseBody> postFaceIDList(@Body JSONArray face_id);
+
+    @POST("user/set-person-id")
+    Call<ResponseBody> postPersonID(@Body String person_id);
+
+    @GET("timetable/week?week=1")
+    Call<ResponseBody> getTimetableByWeek();
+
+    @GET("timetable/total-week")
+    Call<ResponseBody> getFullTimetable();
 
 
 //    @POST("/attendance-system/api/web/index.php/v1/api/post")
