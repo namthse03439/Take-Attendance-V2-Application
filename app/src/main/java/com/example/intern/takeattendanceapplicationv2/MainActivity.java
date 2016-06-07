@@ -1,6 +1,8 @@
 package com.example.intern.takeattendanceapplicationv2;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -18,8 +20,11 @@ import android.support.v4.widget.DrawerLayout;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.example.intern.takeattendanceapplicationv2.Fragment.AttendanceReportByTimeFragment;
 import com.example.intern.takeattendanceapplicationv2.Fragment.TakeAttendanceToday;
 import com.example.intern.takeattendanceapplicationv2.Fragment.TrainingFragment;
+
+import java.net.InetAddress;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -33,6 +38,8 @@ public class MainActivity extends AppCompatActivity
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence mTitle;
+
+    private final String noInternetConnection = "Check your connection\n and try again.";
 
     @Override
     public void onBackPressed() {
@@ -54,6 +61,39 @@ public class MainActivity extends AppCompatActivity
                 (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
+    public boolean isInternetAvailable() {
+        try {
+            InetAddress ipAddr = InetAddress.getByName("google.com.sg"); //You can replace it with your name
+
+            if (ipAddr.equals("")) {
+                return false;
+            } else {
+                return true;
+            }
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    void showMessage(String message)
+    {
+        AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+        builder2.setMessage(message);
+        builder2.setCancelable(true);
+
+        builder2.setPositiveButton(
+                "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert12 = builder2.create();
+        alert12.show();
+    }
+
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         android.app.Fragment fragment = null;
@@ -64,11 +104,19 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
             case 1:{
-                fragment = new TrainingFragment();
+                if (!isInternetAvailable())
+                {
+                    showMessage(noInternetConnection);
+                    return;
+                }
+                else
+                {
+                    fragment = new TrainingFragment();
+                }
                 break;
             }
             case 2:{
-//                fragment = new MapFragment();
+                fragment = new AttendanceReportByTimeFragment();
                 break;
             }
             case 3:{

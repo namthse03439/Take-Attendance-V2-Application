@@ -3,6 +3,7 @@ package com.example.intern.takeattendanceapplicationv2.Fragment;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -44,7 +45,7 @@ public class TakeAttendanceToday extends Fragment {
     private String mParam2;
 
     private Calendar calendar;
-    private TableLayout[] tls = new TableLayout[3];
+    private TableLayout[] tls = new TableLayout[2];
     TextView textTime;
 
     private View myView;
@@ -90,7 +91,6 @@ public class TakeAttendanceToday extends Fragment {
     {
         tls[0] = (TableLayout) myView.findViewById(R.id.tableLayout1);
         tls[1] = (TableLayout) myView.findViewById(R.id.tableLayout2);
-        tls[2] = (TableLayout) myView.findViewById(R.id.tableLayout3);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class TakeAttendanceToday extends Fragment {
 
         //+ Set time view
         calendar = Calendar.getInstance();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, MM/dd/yyyy");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE, MM/dd/yyyy");
         String stringTime = simpleDateFormat.format(calendar.getTime());
 
         textTime = (TextView) myView.findViewById(R.id.text_Time);
@@ -117,9 +117,20 @@ public class TakeAttendanceToday extends Fragment {
 
             TextView tvs = new TextView(context);
             tvs.setGravity(Gravity.CENTER);
+            if (i % 2 == 1)
+            {
+                tvs.setBackgroundColor(Color.parseColor("#bbdefb"));
+            }
+            else
+            {
+                tvs.setBackgroundColor(Color.WHITE);
+            }
 
             tvs.setText(values.get(0));
             tvs.setLines(5);
+
+            TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, Gravity.CENTER);
+            tvs.setLayoutParams(params);
 
             TableRow trs = new TableRow(context);
             trs.addView(tvs);
