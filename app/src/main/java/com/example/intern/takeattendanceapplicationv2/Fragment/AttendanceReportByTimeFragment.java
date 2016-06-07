@@ -174,8 +174,11 @@ public class AttendanceReportByTimeFragment extends Fragment {
             tvs.setLayoutParams(params);
 
             TableRow trs = new TableRow(context);
+            final float scale = context.getResources().getDisplayMetrics().density;
+            int pixels = (int) (70 * scale + 0.5f);
+            trs.setMinimumWidth(pixels);
             trs.addView(tvs);
-
+            
             tls[0].addView(trs);
         }
         //- Add time to table
