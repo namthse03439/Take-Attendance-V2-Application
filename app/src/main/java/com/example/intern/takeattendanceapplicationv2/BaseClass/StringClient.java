@@ -2,6 +2,8 @@ package com.example.intern.takeattendanceapplicationv2.BaseClass;
 
 import org.json.JSONArray;
 
+import java.util.ArrayList;
+
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -39,7 +41,7 @@ public interface StringClient {
     Call<ResponseBody> getFaceIDList();
 
     @POST("user/set-face-id")
-    Call<ResponseBody> postFaceIDList(@Body JSONArray face_id);
+    Call<ResponseBody> postFaceIDList(@Body ArrayList<String> face_id);
 
     @POST("user/set-person-id")
     Call<ResponseBody> postPersonID(@Body String person_id);
@@ -49,7 +51,6 @@ public interface StringClient {
 
     @GET("timetable/total-week")
     Call<ResponseBody> getFullTimetable();
-
 
 //    @POST("/attendance-system/api/web/index.php/v1/api/post")
 //    Call<JSONObject> postJSON(@Body JSONObject MothaibaBook);

@@ -193,13 +193,12 @@ public class LogInActivity extends AppCompatActivity {
 
         Call<ResponseBody> call = client.login(up);
 
-//        Response<ResponseBody> response = call.execute();
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
                     JSONObject data = new JSONObject(response.body().string());
-                    String authorizationCode = data.getString("data");
+                    String authorizationCode = data.getString("token");
 
                     int messageCode = response.code();
 
