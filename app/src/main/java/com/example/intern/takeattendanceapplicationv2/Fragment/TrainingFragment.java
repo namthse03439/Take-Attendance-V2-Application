@@ -231,7 +231,7 @@ class TrainThread extends Thread{
     public TrainThread(String _mCurrentPhotoPath, Context _context){
         mCurrentPhotoPath = _mCurrentPhotoPath;
 //        mCurrentPhotoPath = "Removable/MicroSD/corel1000/minority/1.jpg";
-        mCurrentPhotoPath = "/sdcard/Pictures/resized.jpg";
+//        mCurrentPhotoPath = "/sdcard/Pictures/resized.jpg";
         context = _context;
     }
 
