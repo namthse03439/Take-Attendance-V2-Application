@@ -1,6 +1,7 @@
 package com.example.intern.takeattendanceapplicationv2.BaseClass;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -52,10 +53,7 @@ public interface StringClient {
     @GET("timetable/total-week")
     Call<ResponseBody> getFullTimetable();
 
-//    @POST("/attendance-system/api/web/index.php/v1/api/post")
-//    Call<JSONObject> postJSON(@Body JSONObject MothaibaBook);
-
-//    @POST("/attendance-system/api/web/index.php/v1/api/post")
-//    Call<String> postJSONreceiveString(@Body JSONObject up);
+    @POST("timetable/check-attendance")
+    Call<ResponseBody> atAttendanceTime(@Body JSONObject isOntime);
 
 }

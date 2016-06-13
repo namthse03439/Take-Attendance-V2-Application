@@ -6,6 +6,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,6 +32,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -158,7 +161,7 @@ public class TrainingFragment extends Fragment {
         }
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
+                ".jpeg",         /* suffix */
                 storageDir      /* directory */
         );
 //        System.out.println("check");
@@ -198,6 +201,8 @@ public class TrainingFragment extends Fragment {
             progressDialog.show();
 
             // =============================
+
+            resizeImage(mCurrentPhotoPath);
             trainingFunction();
 
             // -----------------------------
@@ -215,13 +220,128 @@ public class TrainingFragment extends Fragment {
 
     }
 
+    void resizeImage(String mCurrentPhotoPath){
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, options);
+
+        int oldWidth = bitmap.getWidth();
+        int oldHeight = bitmap.getHeight();
+
+        double ratio = Math.sqrt(GlobalVariable.imageArea / (oldHeight * oldWidth));
+
+        int newWidth = (int) (oldWidth * ratio);
+        int newHeight = (int) (oldHeight * ratio);
+        Bitmap resized = bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+        File file = new File(mCurrentPhotoPath);
+        if(file.exists()) file.delete();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            resized.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
     void trainingFunction() {
         Context context = this.context;
         TrainThread trainThread = new TrainThread(mCurrentPhotoPath, context);
         trainThread.start();
     }
 
+
 }
+
+//============= test code ================
+
+
+
+//TODO: remember to resize first
+class VerifyThread extends Thread{
+    Thread t;
+    String mCurrentPhotoPath = null;
+    Context context;
+    public VerifyThread(String _mCurrentPhotoPath, Context _context){
+        mCurrentPhotoPath = _mCurrentPhotoPath;
+        context = _context;
+    }
+
+    public void run(){
+        HttpRequests httpRequests = new HttpRequests(GlobalVariable.apiKey, GlobalVariable.apiSecret);
+        File imgFile = new File(mCurrentPhotoPath);
+
+        SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        String personID = getThisPersonID(auCode);
+        if(personID.compareTo("") != 0){
+            String faceID = get1FaceID(httpRequests, imgFile);
+            double result = getVerification(httpRequests, personID, faceID);
+
+            //TODO: send this verifyResult to local server and get response, notify user about the response
+        }
+        else{
+            //TODO: Show notification to user: you must train first, before verirying
+        }
+
+    }
+
+    private double getVerification(HttpRequests httpRequests, String personID, String faceID) {
+        double result = 0;
+        PostParameters postParameters = new PostParameters().setPersonId(personID).setFaceId(faceID);
+        try{
+            JSONObject fppResult = httpRequests.recognitionVerify(postParameters);
+            result = fppResult.getDouble("confidence");
+            if(!fppResult.getBoolean("is_same_person"))
+                result = 100 - result;
+        }
+        catch(Exception e){
+            System.out.print("Process interrupted!");
+        }
+
+        return result;
+    }
+
+
+    String getThisPersonID(String auCode){
+
+        String personID = null;
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+        Call<ResponseBody> call = client.getPersonID();
+
+        try {
+            Response<ResponseBody> response = call.execute();
+            JSONObject data = new JSONObject(response.body().string());
+            personID = data.getString("person_id");
+        }
+        catch(Exception e){
+            System.out.print("Error get this personID");
+        }
+
+        return personID;
+    }
+
+    String get1FaceID(HttpRequests httpRequests, File imgFile){
+        String faceID = null;
+        try {
+            PostParameters postParameters = new PostParameters().setImg(imgFile).setMode("oneface");
+            JSONObject faceResult = httpRequests.detectionDetect(postParameters);
+            faceID = faceResult.getJSONArray("face").getJSONObject(0).getString("face_id");
+        }
+        catch(Exception e){
+            System.out.print("Get FaceID failed!");
+        }
+        return faceID;
+    }
+}
+
+//========================================
+
 
 class TrainThread extends Thread{
     Thread t;

@@ -1,5 +1,6 @@
 package com.example.intern.takeattendanceapplicationv2;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.app.Activity;
 import android.support.v7.app.ActionBar;
@@ -21,6 +22,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
@@ -251,8 +258,31 @@ public class NavigationDrawerFragment extends Fragment {
 //            Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
 //            return true;
 //        }
+        if (item.getItemId() == R.id.action_logout) {
+            //TODO logout action
+            logoutAction();
+
+            Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+
 
         return super.onOptionsItemSelected(item);
+    }
+
+    void logoutAction(){
+        SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        SharedPreferences.Editor editor = pref.edit();
+        editor.clear();
+        editor.apply();
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+        Call<ResponseBody> call = client.logout();
+
+        Intent intent = new Intent(getActivity(), LogInActivity.class);
+        startActivity(intent);
     }
 
     /**
