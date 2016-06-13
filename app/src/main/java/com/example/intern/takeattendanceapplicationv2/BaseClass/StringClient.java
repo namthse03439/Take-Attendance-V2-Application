@@ -50,6 +50,8 @@ public interface StringClient {
     @GET("timetable/total-week")
     Call<ResponseBody> getFullTimetable();
 
+    @GET("timetable/today")
+    Call<ResponseBody> getTimetableToday();
 
 //    @POST("/attendance-system/api/web/index.php/v1/api/post")
 //    Call<JSONObject> postJSON(@Body JSONObject MothaibaBook);

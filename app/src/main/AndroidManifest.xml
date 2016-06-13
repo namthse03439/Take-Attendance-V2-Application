@@ -32,7 +32,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name"></activity>
+            android:label="@string/app_name" />
         <activity android:name=".LogInActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,7 +41,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".SignUpActivity" />
-        <activity android:name=".TakeAttendanceTodayActivity"></activity>
+        <activity android:name=".TakeAttendanceTodayActivity" />
+        <activity android:name=".DetailedInformationActivity"></activity>
     </application>
 
 </manifest>

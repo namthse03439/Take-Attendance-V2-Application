@@ -18,8 +18,12 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
 import com.example.intern.takeattendanceapplicationv2.Information.ScheduleManager;
 import com.example.intern.takeattendanceapplicationv2.R;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -141,16 +145,8 @@ public class AttendanceReportByTimeFragment extends Fragment {
         setCurrentDateOnView(end_date, R.id.text_endDate);
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        myView = inflater.inflate(R.layout.fragment_attendance_report_by_time, container, false);
-
-        initDatePicker();
-
-        //+ Add time to table
-        getTableLayout();
+    private void createTimeColumn()
+    {
         for(int i = 0; i < ScheduleManager.timeNumber; i++)
         {
             List<String> values = new ArrayList<>();
@@ -181,7 +177,17 @@ public class AttendanceReportByTimeFragment extends Fragment {
 
             tls[0].addView(trs);
         }
-        //- Add time to table
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        myView = inflater.inflate(R.layout.fragment_attendance_report_by_time, container, false);
+
+        initDatePicker();
+        getTableLayout();
+        createTimeColumn();
 
         return myView;
     }

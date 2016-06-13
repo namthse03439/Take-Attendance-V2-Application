@@ -3,6 +3,7 @@ package com.example.intern.takeattendanceapplicationv2;
 import android.app.Activity;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 
 import android.content.SharedPreferences;
@@ -26,6 +27,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 
+import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
 import com.example.intern.takeattendanceapplicationv2.Fragment.AttendanceReportByTimeFragment;
 import com.example.intern.takeattendanceapplicationv2.Fragment.TakeAttendanceToday;
 import com.example.intern.takeattendanceapplicationv2.Fragment.TrainingFragment;
@@ -34,6 +36,7 @@ import java.net.InetAddress;
 
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
+import com.example.intern.takeattendanceapplicationv2.Information.ScheduleManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -59,6 +62,8 @@ public class MainActivity extends AppCompatActivity
 
     private final String noInternetConnection = "Check your connection\n and try again.";
 
+    ScheduleManager manager = new ScheduleManager();
+
     @Override
     public void onBackPressed() {
         moveTaskToBack(true);
@@ -76,7 +81,8 @@ public class MainActivity extends AppCompatActivity
         //===============
 
 //        loadTimetableByWeek();
-        loadFullTimetable();
+//        if(!haveFullTimetable())
+//            loadFullTimetable();
 
         //---------------
 
@@ -84,21 +90,6 @@ public class MainActivity extends AppCompatActivity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
-    }
-
-    public boolean isInternetAvailable() {
-        try {
-            InetAddress ipAddr = InetAddress.getByName("google.com.sg"); //You can replace it with your name
-
-            if (ipAddr.equals("")) {
-                return false;
-            } else {
-                return true;
-            }
-
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     void showMessage(String message)
@@ -129,15 +120,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
             case 1:{
-                if (!isInternetAvailable())
-                {
-                    showMessage(noInternetConnection);
-                    return;
-                }
-                else
-                {
-                    fragment = new TrainingFragment();
-                }
+                fragment = new TrainingFragment();
                 break;
             }
             case 2:{
@@ -153,6 +136,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
             default:
+                //TODO load timetable today
                 fragment = new TakeAttendanceToday();
                 break;
         }
@@ -252,6 +236,12 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    boolean haveFullTimetable(){
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
+        String timeTable = pref.getString("fullTimeTable", null);
+        return timeTable != null;
+    }
+
     void loadTimetableByWeek(){
 
         try {
@@ -285,36 +275,99 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    void loadFullTimetable(){
-        try {
-            SharedPreferences pref = this.getSharedPreferences("ATK_pref", 0);
-            String auCode = pref.getString("authorizationCode", null);
+//    void loadFullTimetable(){
+//        try {
+//            SharedPreferences pref = this.getSharedPreferences("ATK_pref", 0);
+//            String auCode = pref.getString("authorizationCode", null);
+//
+//            StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+//            Call<ResponseBody> call = client.getFullTimetable();
+//
+//            call.enqueue(new Callback<ResponseBody>() {
+//                @Override
+//                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                    try {
+//                        JSONArray data = new JSONArray(response.body().string());
+//                        GlobalVariable.scheduleManager.setSchedule(data);
+//
+//                        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
+//                        SharedPreferences.Editor editor = pref.edit();
+//                        editor.putString("fullTimetable", data.toString());
+//                        editor.apply();
+//
+//                        System.out.print("OK!");
+//                    }
+//                    catch (Exception e){
+//                        System.out.print("Failed!");
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Call<ResponseBody> call, Throwable t) {
+//                    System.out.print("Failed");
+//                }
+//            });
+//
+//        }
+//        catch(Exception e){
+//            System.out.print("load timetable by week exception!");
+//        }
+//    }
 
-            StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
-            Call<ResponseBody> call = client.getFullTimetable();
-
-            call.enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    try {
-                        JSONObject data = new JSONObject(response.body().string());
-                        System.out.print("OK!");
-                    }
-                    catch (Exception e){
-                        System.out.print("Failed!");
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                }
-            });
-
-        }
-        catch(Exception e){
-            System.out.print("load timetable by week exception!");
-        }
-    }
+//    void loadTimetableToday() {
+//        try {
+//            final ProgressDialog progressDialog = new ProgressDialog(MainActivity.this, R.style.AppTheme);
+//            progressDialog.setIndeterminate(true);
+//            progressDialog.setMessage("Loading data from server...");
+//            progressDialog.show();
+//
+////            GlobalVariable.loadedTimetableToday = false;
+//
+//            SharedPreferences pref = this.getSharedPreferences("ATK_pref", 0);
+//            String auCode = pref.getString("authorizationCode", null);
+//
+//            StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+//            Call<ResponseBody> call = client.getTimetableToday();
+//            call.enqueue(new Callback<ResponseBody>() {
+//                @Override
+//                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                    try{
+//                        JSONArray data = new JSONArray(response.body().string());
+//                        GlobalVariable.scheduleManager.setDailySchedule(data);
+//
+//
+//
+//
+//                    }
+//                    catch(Exception e){
+//                        e.printStackTrace();
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Call<ResponseBody> call, Throwable t) {
+//                    System.out.print("Tung");
+//                }
+//            });
+//
+//
+////            while(GlobalVariable.loadedTimetableToday == false){}
+////            GlobalVariable.loadedTimetableToday = false;
+//
+//            new android.os.Handler().postDelayed(
+//                    new Runnable() {
+//                        public void run() {
+//                            progressDialog.dismiss();
+//                        }
+//                    }, 1000);
+//
+//            System.out.print("OK!");
+//
+//        }
+//
+//        catch(Exception e){
+//            System.out.print("load timetable today!");
+//        }
+//    }
 
 }

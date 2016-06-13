@@ -2,11 +2,17 @@ package com.example.intern.takeattendanceapplicationv2.Fragment;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,13 +23,27 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
+import com.example.intern.takeattendanceapplicationv2.DetailedInformationActivity;
 import com.example.intern.takeattendanceapplicationv2.Information.ScheduleManager;
+import com.example.intern.takeattendanceapplicationv2.MainActivity;
 import com.example.intern.takeattendanceapplicationv2.R;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 
 
 /**
@@ -87,35 +107,53 @@ public class TakeAttendanceToday extends Fragment {
         context = this.getActivity();
     }
 
+    private String getDateOfWeekString(int dateOfWeek)
+    {
+        switch (dateOfWeek)
+        {
+            case 1:
+                return "MON";
+            case 2:
+                return "TUES";
+            case 3:
+                return "WED";
+            case 4:
+                return "THUR";
+            case 5:
+                return "FRI";
+            case 6:
+                return "SAT";
+            case 7:
+                return "SUN";
+            default:
+                return "null";
+        }
+    }
+
+    int getTime(String time)
+    {
+        int temp_index = time.lastIndexOf(":");
+        String temp_current_time = String.valueOf(time.subSequence(0, temp_index));
+        int current_time = Integer.parseInt(temp_current_time);
+
+        return current_time;
+    }
+
     private void getTableLayout()
     {
         tls[0] = (TableLayout) myView.findViewById(R.id.tableLayout1);
         tls[1] = (TableLayout) myView.findViewById(R.id.tableLayout2);
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        myView = inflater.inflate(R.layout.fragment_take_attendance_today, container, false);
-
-        //+ Set time view
-        calendar = Calendar.getInstance();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE, MM/dd/yyyy");
-        String stringTime = simpleDateFormat.format(calendar.getTime());
-
-        textTime = (TextView) myView.findViewById(R.id.text_Time);
-        textTime.setText(stringTime);
-        //- Set time view
-
-        //+ Add time to table
-        getTableLayout();
+    private void displayTimeColumn()
+    {
         for(int i = 0; i < ScheduleManager.timeNumber; i++)
         {
             List<String> values = new ArrayList<>();
             values.add(ScheduleManager.dailyTime[i]);
 
             TextView tvs = new TextView(context);
+
             tvs.setGravity(Gravity.CENTER);
             if (i % 2 == 1)
             {
@@ -127,9 +165,12 @@ public class TakeAttendanceToday extends Fragment {
             }
 
             tvs.setText(values.get(0));
+
             tvs.setLines(5);
 
             TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, Gravity.CENTER);
+            params.setMargins(0, 3, 0, 0);
+
             tvs.setLayoutParams(params);
 
             TableRow trs = new TableRow(context);
@@ -137,7 +178,191 @@ public class TakeAttendanceToday extends Fragment {
 
             tls[0].addView(trs);
         }
-        //- Add time to table
+    }
+
+    private void createSubjectView(boolean isExistSubject, final int startTime, final int endTime, final int index, final JSONObject subject)
+    {
+        if (!isExistSubject)
+        {
+            for(int i = startTime; i < endTime; i++)
+            {
+                TextView tvs = new TextView(context);
+                tvs.setLines(5);
+
+                TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, Gravity.CENTER);
+                params.setMargins(0, 0, 0, 0);
+
+                tvs.setLayoutParams(params);
+
+                TableRow trs = new TableRow(context);
+                trs.addView(tvs);
+
+                tls[1].addView(trs);
+            }
+
+            return;
+        }
+
+        try
+        {
+            TextView tvs = new TextView(context);
+            String temp;
+            String result = "";
+            String subject_area = subject.getString("subject_area");
+            String class_section = subject.getString("class_section");
+
+            temp = subject_area + " " + class_section + System.getProperty ("line.separator");
+            result += temp;
+
+            temp = subject.getString("location");
+            result += temp;
+
+            tvs.setLines(5 * (endTime - startTime + 1));
+            tvs.setGravity(Gravity.CENTER);
+            tvs.setTextColor(Color.WHITE);
+
+            final int status = Integer.parseInt(subject.getString("status"));
+            switch (status) {
+                case 0:
+                    tvs.setBackgroundColor(Color.LTGRAY);
+                    break;
+                case 1:
+                    tvs.setBackgroundColor(Color.GREEN);
+                    break;
+                case 2:
+                    tvs.setBackgroundColor(Color.YELLOW);
+                    break;
+                case 3:
+                    tvs.setBackgroundColor(Color.RED);
+                    break;
+            }
+
+            tvs.setText(result);
+
+            TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, Gravity.CENTER);
+            params.setMargins(0, 0, 0, 0);
+
+            tvs.setLayoutParams(params);
+
+            TableRow trs = new TableRow(context);
+            trs.addView(tvs);
+
+            tls[1].addView(trs);
+
+            tvs.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    GlobalVariable.scheduleManager.setCurrentLession(index);
+                    Intent intend = new Intent(context, DetailedInformationActivity.class);
+                    startActivity(intend);
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void displayScheduleToday()
+    {
+        JSONArray schedule = GlobalVariable.scheduleManager.getDailySchedule();
+
+        int time = 8;
+        for(int subjectIndex = 0; subjectIndex < schedule.length(); subjectIndex++)
+        {
+            JSONObject subject = null;
+            try
+            {
+                subject = schedule.getJSONObject(subjectIndex);
+                int startSubjectTime = getTime(subject.getString("start_time"));
+                int endSubjectTime = getTime(subject.getString("end_time"));
+
+                createSubjectView(false, time, startSubjectTime, -1, null);
+                createSubjectView(true, startSubjectTime, endSubjectTime, subjectIndex, subject);
+                time = endSubjectTime;
+
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        createSubjectView(false, time, 17, -1, null);
+    }
+
+
+    private void setTimeView()
+    {
+        calendar = Calendar.getInstance();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE, MM/dd/yyyy");
+        String stringTime = simpleDateFormat.format(calendar.getTime());
+
+        textTime = (TextView) myView.findViewById(R.id.text_Time);
+        textTime.setText(stringTime);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        myView = inflater.inflate(R.layout.fragment_take_attendance_today, container, false);
+
+        setTimeView();
+
+        try {
+            final ProgressDialog progressDialog = new ProgressDialog(getActivity(), R.style.AppTheme);
+            progressDialog.setIndeterminate(true);
+            progressDialog.setMessage("Loading data from server...");
+            progressDialog.show();
+
+            SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
+            String auCode = pref.getString("authorizationCode", null);
+
+            StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+            Call<ResponseBody> call = client.getTimetableToday();
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    try{
+                        JSONArray data = new JSONArray(response.body().string());
+                        GlobalVariable.scheduleManager.setDailySchedule(data);
+
+                        getTableLayout();
+                        displayTimeColumn();
+                        displayScheduleToday();
+
+                    }
+                    catch(Exception e){
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    System.out.print("Tung");
+                }
+            });
+
+
+//            while(GlobalVariable.loadedTimetableToday == false){}
+//            GlobalVariable.loadedTimetableToday = false;
+
+            new android.os.Handler().postDelayed(
+                    new Runnable() {
+                        public void run() {
+                            progressDialog.dismiss();
+                        }
+                    }, 1000);
+
+            System.out.print("OK!");
+
+        }
+
+        catch(Exception e){
+            System.out.print("load timetable today!");
+        }
 
         return myView;
     }

@@ -18,10 +18,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.LoginClass;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import butterknife.ButterKnife;
@@ -45,7 +47,22 @@ public class LogInActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
 
+//        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
+//        SharedPreferences.Editor editor = pref.edit();
+//        editor.putString("authorizationCode", null);
+//        editor.apply();
+
         SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
+        String data = pref.getString("fullTimetable", null);
+        try {
+            JSONArray temp = new JSONArray(data);
+            GlobalVariable.scheduleManager.setSchedule(temp);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
         String auCode = pref.getString("authorizationCode", null);
         if(auCode != null && auCode != "{\"password\":[\"Incorrect username or password.\"]}"){
             Intent intent = new Intent(this, MainActivity.class);
@@ -193,40 +210,45 @@ public class LogInActivity extends AppCompatActivity {
         Call<ResponseBody> call = client.login(up);
 
 //        Response<ResponseBody> response = call.execute();
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    JSONObject data = new JSONObject(response.body().string());
-                    String authorizationCode = data.getString("data");
+        try {
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    try {
+                        JSONObject data = new JSONObject(response.body().string());
+                        String authorizationCode = data.getString("token");
 
-                    int messageCode = response.code();
+                        int messageCode = response.code();
 
-                    if(messageCode == 200){
+                        if (messageCode == 200) {
 
-                        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
-                        SharedPreferences.Editor editor = pref.edit();
-                        editor.putString("authorizationCode", "Bearer " + authorizationCode);
-                        editor.apply();
+                            SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
+                            SharedPreferences.Editor editor = pref.edit();
+                            editor.putString("authorizationCode", "Bearer " + authorizationCode);
+                            editor.apply();
 
-                        Intent intend = new Intent(LogInActivity.this, MainActivity.class);
-                        startActivity(intend);
+                            Intent intend = new Intent(LogInActivity.this, MainActivity.class);
+                            startActivity(intend);
+                        } else {
+                            //TODO if messageCode != 200, show some dialog...
+                        }
+
+                    } catch (Exception e) {
+                        System.out.print("Exception caught Login");
                     }
-                    else{
-                        //TODO if messageCode != 200, show some dialog...
-                    }
-
                 }
-                catch(Exception e){
-                    System.out.print("Exception caught Login");
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                //TODO handle when fail
-                System.out.print("Error Login");
-            }
-        });
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    //TODO handle when fail
+                    System.out.print("Error Login");
+                }
+            });
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
+
+
 }
