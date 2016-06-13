@@ -232,7 +232,6 @@ public class LogInActivity extends AppCompatActivity {
                         } else {
                             //TODO if messageCode != 200, show some dialog...
                         }
-
                     } catch (Exception e) {
                         System.out.print("Exception caught Login");
                     }

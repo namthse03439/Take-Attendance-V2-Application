@@ -13,4 +13,6 @@ public class GlobalVariable {
     public static final int maxLengthFaceList = 5;
     public static ScheduleManager scheduleManager = new ScheduleManager();
     public static boolean loadedTimetableToday = false;
+    public static final double imageArea = 200000;
+
 }

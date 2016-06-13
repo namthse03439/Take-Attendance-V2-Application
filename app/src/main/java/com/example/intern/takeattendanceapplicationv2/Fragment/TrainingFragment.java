@@ -6,6 +6,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +22,8 @@ import android.view.ViewGroup;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
+import com.example.intern.takeattendanceapplicationv2.LogInActivity;
+import com.example.intern.takeattendanceapplicationv2.MainActivity;
 import com.example.intern.takeattendanceapplicationv2.R;
 import com.facepp.http.HttpRequests;
 import com.facepp.http.PostParameters;
@@ -28,8 +32,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import okhttp3.ResponseBody;
@@ -149,11 +155,16 @@ public class TrainingFragment extends Fragment {
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES);
+
+        if (!storageDir.exists()) {
+            storageDir.mkdirs();
+        }
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
+                ".jpeg",         /* suffix */
                 storageDir      /* directory */
         );
+//        System.out.println("check");
 
         // Save a file: path for use with ACTION_VIEW intents
         mCurrentPhotoPath = image.getAbsolutePath();
@@ -190,8 +201,9 @@ public class TrainingFragment extends Fragment {
             progressDialog.show();
 
             // =============================
-            // TODO: Tung: complete this function
-//            trainingFunction();
+
+            resizeImage(mCurrentPhotoPath);
+            trainingFunction();
 
             // -----------------------------
 
@@ -207,7 +219,143 @@ public class TrainingFragment extends Fragment {
         }
 
     }
+
+    void resizeImage(String mCurrentPhotoPath){
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, options);
+
+        int oldWidth = bitmap.getWidth();
+        int oldHeight = bitmap.getHeight();
+
+        double ratio = Math.sqrt(GlobalVariable.imageArea / (oldHeight * oldWidth));
+
+        int newWidth = (int) (oldWidth * ratio);
+        int newHeight = (int) (oldHeight * ratio);
+        Bitmap resized = bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+        File file = new File(mCurrentPhotoPath);
+        if(file.exists()) file.delete();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            resized.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
     void trainingFunction() {
+        Context context = this.context;
+        TrainThread trainThread = new TrainThread(mCurrentPhotoPath, context);
+        trainThread.start();
+    }
+
+
+}
+
+//============= test code ================
+
+
+
+//TODO: remember to resize first
+class VerifyThread extends Thread{
+    Thread t;
+    String mCurrentPhotoPath = null;
+    Context context;
+    public VerifyThread(String _mCurrentPhotoPath, Context _context){
+        mCurrentPhotoPath = _mCurrentPhotoPath;
+        context = _context;
+    }
+
+    public void run(){
+        HttpRequests httpRequests = new HttpRequests(GlobalVariable.apiKey, GlobalVariable.apiSecret);
+        File imgFile = new File(mCurrentPhotoPath);
+
+        SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        String personID = getThisPersonID(auCode);
+        if(personID.compareTo("") != 0){
+            String faceID = get1FaceID(httpRequests, imgFile);
+            double result = getVerification(httpRequests, personID, faceID);
+
+            //TODO: send this verifyResult to local server and get response, notify user about the response
+        }
+        else{
+            //TODO: Show notification to user: you must train first, before verirying
+        }
+
+    }
+
+    private double getVerification(HttpRequests httpRequests, String personID, String faceID) {
+        double result = 0;
+        PostParameters postParameters = new PostParameters().setPersonId(personID).setFaceId(faceID);
+        try{
+            JSONObject fppResult = httpRequests.recognitionVerify(postParameters);
+            result = fppResult.getDouble("confidence");
+            if(!fppResult.getBoolean("is_same_person"))
+                result = 100 - result;
+        }
+        catch(Exception e){
+            System.out.print("Process interrupted!");
+        }
+
+        return result;
+    }
+
+
+    String getThisPersonID(String auCode){
+
+        String personID = null;
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+        Call<ResponseBody> call = client.getPersonID();
+
+        try {
+            Response<ResponseBody> response = call.execute();
+            JSONObject data = new JSONObject(response.body().string());
+            personID = data.getString("person_id");
+        }
+        catch(Exception e){
+            System.out.print("Error get this personID");
+        }
+
+        return personID;
+    }
+
+    String get1FaceID(HttpRequests httpRequests, File imgFile){
+        String faceID = null;
+        try {
+            PostParameters postParameters = new PostParameters().setImg(imgFile).setMode("oneface");
+            JSONObject faceResult = httpRequests.detectionDetect(postParameters);
+            faceID = faceResult.getJSONArray("face").getJSONObject(0).getString("face_id");
+        }
+        catch(Exception e){
+            System.out.print("Get FaceID failed!");
+        }
+        return faceID;
+    }
+}
+
+//========================================
+
+
+class TrainThread extends Thread{
+    Thread t;
+    String mCurrentPhotoPath = null;
+    Context context;
+
+    public TrainThread(String _mCurrentPhotoPath, Context _context){
+        mCurrentPhotoPath = _mCurrentPhotoPath;
+//        mCurrentPhotoPath = "Removable/MicroSD/corel1000/minority/1.jpg";
+//        mCurrentPhotoPath = "/sdcard/Pictures/resized.jpg";
+        context = _context;
+    }
+
+    public void run(){
         HttpRequests httpRequests = new HttpRequests(GlobalVariable.apiKey, GlobalVariable.apiSecret);
         File imgFile = new File(mCurrentPhotoPath);
 
@@ -217,24 +365,41 @@ public class TrainingFragment extends Fragment {
         String newFaceID = get1FaceID(httpRequests, imgFile);
         String personID = getThisPersonID(auCode);
 
-        if(personID != null){ //this person has been trained before
+        if(personID.compareTo("") != 0){ //this person has been trained before
 
-            JSONArray faceIDList = getThisFaceIDList(auCode);
+            ArrayList faceIDList = getThisFaceIDList(auCode);
             faceIDList = substitute1FacefromPerson(httpRequests, personID, faceIDList, newFaceID);
             postFaceIDListtoLocalServer(auCode, faceIDList);
         }
         else{
-            personID = create1Person(httpRequests, imgFile);
+            personID = create1Person(httpRequests, newFaceID);
+            postPersonIDtoLocalServer(auCode, personID);
+            ArrayList<String> faceIDList = new ArrayList<String>();
+            faceIDList.add(newFaceID);
+            postFaceIDListtoLocalServer(auCode, faceIDList);
+        }
+        //TODO: Show notification about sucessful training
+        System.out.print("Trained OK!");
+    }
 
+    void postPersonIDtoLocalServer(String auCode, String personID){
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+        Call<ResponseBody> call = client.postPersonID(personID);
+
+        try{
+            Response<ResponseBody> response = call.execute();
+            int messageCode = response.code();
+        }
+        catch(Exception e){
+            System.out.print("Error get this faceID list");
         }
 
     }
 
-    String create1Person(HttpRequests httpRequests, File imgFile){
+    String create1Person(HttpRequests httpRequests, String faceID){
         String personID = null;
 
         try {
-            String faceID = get1FaceID(httpRequests, imgFile);
             PostParameters postParameters = new PostParameters().setFaceId(faceID);
             JSONObject person = httpRequests.personCreate(postParameters);
             personID = person.getString("person_id");
@@ -249,13 +414,13 @@ public class TrainingFragment extends Fragment {
         return personID;
     }
 
-    void postFaceIDListtoLocalServer(String auCode, JSONArray faceIDList){
+    void postFaceIDListtoLocalServer(String auCode, ArrayList<String> faceIDList){
         try {
             StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
             Call<ResponseBody> call = client.postFaceIDList(faceIDList);
             Response<ResponseBody> response = call.execute();
             int messageCode = response.code();
-            if(messageCode != 200){
+            if(messageCode != 200) {
                 //TODO: show error
             }
         }
@@ -265,13 +430,13 @@ public class TrainingFragment extends Fragment {
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    JSONArray substitute1FacefromPerson(HttpRequests httpRequests, String personID, JSONArray faceIDList, String newFaceID){
+    ArrayList substitute1FacefromPerson(HttpRequests httpRequests, String personID, ArrayList faceIDList, String newFaceID){
 
         try{
 
             // get the earliest faceID in the list, that is the faceID with index 0
-            if(faceIDList.length() == GlobalVariable.maxLengthFaceList){
-                String oldFaceID = faceIDList.getString(0);
+            if(faceIDList != null && faceIDList.size() == GlobalVariable.maxLengthFaceList) {
+                String oldFaceID = faceIDList.get(0).toString();
                 // remove it on Face++
                 PostParameters postParameters = new PostParameters().setPersonId(personID).setFaceId(oldFaceID);
                 httpRequests.personRemoveFace(postParameters);
@@ -283,7 +448,12 @@ public class TrainingFragment extends Fragment {
             PostParameters postParameters = new PostParameters().setPersonId(personID).setFaceId(newFaceID);
             httpRequests.personAddFace(postParameters);
             // add 1 face on the list
-            faceIDList.put(faceIDList.length(), newFaceID);
+            if(faceIDList != null)
+                faceIDList.add(newFaceID);
+            else {
+                faceIDList = new ArrayList();
+                faceIDList.add(newFaceID);
+            }
 
             //re-train person on Face++
             postParameters = new PostParameters().setPersonId(personID);
@@ -299,9 +469,9 @@ public class TrainingFragment extends Fragment {
         return null;
     }
 
-    JSONArray getThisFaceIDList(String auCode){
+    ArrayList getThisFaceIDList(String auCode){
 
-        JSONArray result = null;
+        ArrayList<String> result = null;
 
         StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
         Call<ResponseBody> call = client.getFaceIDList();
@@ -309,7 +479,11 @@ public class TrainingFragment extends Fragment {
         try{
             Response<ResponseBody> response = call.execute();
             JSONObject data = new JSONObject(response.body().string());
-            result = data.getJSONArray("face_id");
+            JSONArray arr = data.getJSONArray("face_id");
+
+            result = new ArrayList<String>();
+            for (int i = 0; i < arr.length(); i++)
+                result.add(arr.getString(i).toString());
 
         }
         catch(Exception e){
@@ -352,3 +526,4 @@ public class TrainingFragment extends Fragment {
         return faceID;
     }
 }
+

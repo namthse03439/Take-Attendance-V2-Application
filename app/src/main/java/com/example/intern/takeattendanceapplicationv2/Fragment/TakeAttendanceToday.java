@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -166,14 +167,16 @@ public class TakeAttendanceToday extends Fragment {
 
             tvs.setText(values.get(0));
 
-            tvs.setLines(5);
+            //tvs.setLines(5);
 
             TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, Gravity.CENTER);
-            params.setMargins(0, 3, 0, 0);
-
+            params.height = 140;
             tvs.setLayoutParams(params);
 
             TableRow trs = new TableRow(context);
+            TableLayout.LayoutParams layoutRow = new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT);
+            trs.setLayoutParams(layoutRow);
+
             trs.addView(tvs);
 
             tls[0].addView(trs);
@@ -187,14 +190,16 @@ public class TakeAttendanceToday extends Fragment {
             for(int i = startTime; i < endTime; i++)
             {
                 TextView tvs = new TextView(context);
-                tvs.setLines(5);
+                //tvs.setLines(5);
 
                 TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, Gravity.CENTER);
-                params.setMargins(0, 0, 0, 0);
-
+                params.height = 140;
                 tvs.setLayoutParams(params);
 
                 TableRow trs = new TableRow(context);
+                TableLayout.LayoutParams layoutRow = new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT);
+                trs.setLayoutParams(layoutRow);
+
                 trs.addView(tvs);
 
                 tls[1].addView(trs);
@@ -217,9 +222,10 @@ public class TakeAttendanceToday extends Fragment {
             temp = subject.getString("location");
             result += temp;
 
-            tvs.setLines(5 * (endTime - startTime + 1));
             tvs.setGravity(Gravity.CENTER);
             tvs.setTextColor(Color.WHITE);
+
+
 
             final int status = Integer.parseInt(subject.getString("status"));
             switch (status) {
@@ -240,11 +246,19 @@ public class TakeAttendanceToday extends Fragment {
             tvs.setText(result);
 
             TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, Gravity.CENTER);
-            params.setMargins(0, 0, 0, 0);
-
+            params.height = 140 * (endTime - startTime);
             tvs.setLayoutParams(params);
 
+            GradientDrawable gd = new GradientDrawable();
+            gd.setColor(0xFFCCFF99); // Changes this drawbale to use a single color instead of a gradient
+            gd.setCornerRadius(5);
+            gd.setStroke(1, 0xFF000000);
+            tvs.setBackgroundDrawable(gd);
+
             TableRow trs = new TableRow(context);
+            TableLayout.LayoutParams layoutRow = new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT);
+            trs.setLayoutParams(layoutRow);
+
             trs.addView(tvs);
 
             tls[1].addView(trs);

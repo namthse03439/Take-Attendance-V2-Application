@@ -1,38 +1,29 @@
 package com.example.intern.takeattendanceapplicationv2;
 
 import android.app.Activity;
-
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
-
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.provider.Settings;
 
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
-import android.view.Gravity;
+
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
-
 
 import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
 import com.example.intern.takeattendanceapplicationv2.Fragment.AttendanceReportByTimeFragment;
 import com.example.intern.takeattendanceapplicationv2.Fragment.TakeAttendanceToday;
 import com.example.intern.takeattendanceapplicationv2.Fragment.TrainingFragment;
 
-import java.net.InetAddress;
 
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
@@ -92,8 +83,8 @@ public class MainActivity extends AppCompatActivity
                 (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
-    void showMessage(String message)
-    {
+
+    void showMessage(String message) {
         AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
         builder2.setMessage(message);
         builder2.setCancelable(true);
@@ -110,6 +101,43 @@ public class MainActivity extends AppCompatActivity
         alert12.show();
     }
 
+    void checkLoggedin()
+    {
+        SharedPreferences pref = this.getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+        Call<ResponseBody> call = client.getPersonID();
+
+        boolean result = false;
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    if (response.code() != 200) {
+                        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
+                        SharedPreferences.Editor editor = pref.edit();
+                        editor.putString("authorizationCode", null);
+                        editor.apply();
+
+                        Intent intent = new Intent(MainActivity.this, LogInActivity.class);
+                        startActivity(intent);
+                    }
+                }
+                catch(Exception e){
+                    System.out.print("Error");
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+    }
+
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         android.app.Fragment fragment = null;
@@ -120,6 +148,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
             case 1:{
+                checkLoggedin();
                 fragment = new TrainingFragment();
                 break;
             }

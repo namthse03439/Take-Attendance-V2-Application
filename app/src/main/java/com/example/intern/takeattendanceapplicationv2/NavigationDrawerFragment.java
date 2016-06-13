@@ -258,6 +258,14 @@ public class NavigationDrawerFragment extends Fragment {
 //            Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
 //            return true;
 //        }
+        if (item.getItemId() == R.id.action_logout) {
+            //TODO logout action
+            logoutAction();
+
+            Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+
 
         if (item.getItemId() == R.id.action_logout) {
             //TODO logout action
@@ -268,6 +276,21 @@ public class NavigationDrawerFragment extends Fragment {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    void logoutAction(){
+        SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        SharedPreferences.Editor editor = pref.edit();
+        editor.clear();
+        editor.apply();
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+        Call<ResponseBody> call = client.logout();
+
+        Intent intent = new Intent(getActivity(), LogInActivity.class);
+        startActivity(intent);
     }
 
     /**
@@ -293,21 +316,6 @@ public class NavigationDrawerFragment extends Fragment {
          * Called when an item in the navigation drawer is selected.
          */
         void onNavigationDrawerItemSelected(int position);
-    }
-
-    void logoutAction(){
-        SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
-        String auCode = pref.getString("authorizationCode", null);
-
-        SharedPreferences.Editor editor = pref.edit();
-        editor.putString("authorizationCode", null);
-        editor.apply();
-
-        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
-        Call<ResponseBody> call = client.logout();
-
-        Intent intent = new Intent(getActivity(), LogInActivity.class);
-        startActivity(intent);
     }
 
 }

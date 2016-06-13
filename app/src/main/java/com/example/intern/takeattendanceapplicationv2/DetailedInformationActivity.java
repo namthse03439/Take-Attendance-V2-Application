@@ -65,24 +65,13 @@ public class DetailedInformationActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-
         if (!isTakeAttendance)
         {
             initDetailedData();
             initBeaconEvent();
-            addListenerOnTakeAttendanceButton();
         }
 
         addListenerOnTakeAttendanceButton();
-    }
-
-    int getTime(String time)
-    {
-        int temp_index = time.lastIndexOf(":");
-        String temp_current_time = String.valueOf(time.subSequence(0, temp_index));
-        int current_time = Integer.parseInt(temp_current_time);
-
-        return current_time;
     }
 
     String getTime()
@@ -108,7 +97,6 @@ public class DetailedInformationActivity extends AppCompatActivity {
         try
         {
             int status = Integer.parseInt(subject.getString("status"));
-
             for(int i = 0; i < 7; i++)
             {
                 TextView tv = new TextView(this);
@@ -204,7 +192,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
 
     private void initBeaconEvent()
     {
-        beaconNotInRange();
+        mTakeAttendanceBtn.setBackgroundColor(Color.RED);
 
         beaconManager = new BeaconManager(this);
         beaconManager.setRangingListener(new BeaconManager.RangingListener() {
@@ -237,11 +225,9 @@ public class DetailedInformationActivity extends AppCompatActivity {
                         }
 
                         mTakeAttendanceBtn.setBackgroundColor(Color.GREEN);
-                        addListenerOnTakeAttendanceButton();
                     } else {
-                        remindDiscover = false;
                         mTakeAttendanceBtn.setBackgroundColor(Color.RED);
-                        beaconNotInRange();
+                        remindDiscover = false;
                     }
                 }
             }
@@ -258,13 +244,25 @@ public class DetailedInformationActivity extends AppCompatActivity {
             beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
                 @Override
                 public void onServiceReady() {
-                    beaconManager.startMonitoring(region);
-                ProgressBar progressBar = new ProgressBar(DetailedInformationActivity.this);
-                ObjectAnimator animation =  ObjectAnimator.ofInt (progressBar, "progress", 0, 5000);
+                    try
+                    {
+                        ProgressBar progressBar = new ProgressBar(DetailedInformationActivity.this);
+                        ObjectAnimator animation =  ObjectAnimator.ofInt (progressBar, "progress", 0, 5000);
 
-                animation.setDuration(5000);
-                animation.setInterpolator (new DecelerateInterpolator());
-                animation.start ();
+                        animation.setDuration(5000);
+                        animation.setInterpolator (new DecelerateInterpolator());
+                        animation.start ();
+
+                        String UUIDs = subject.getString("uuid");
+                        int major = Integer.parseInt(subject.getString("major"));
+                        int minor = Integer.parseInt(subject.getString("minor"));
+
+                        beaconManager.startMonitoring(new Region("monitored region",
+                                UUID.fromString(UUIDs), major, minor));
+                    } catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             });
 
@@ -285,28 +283,6 @@ public class DetailedInformationActivity extends AppCompatActivity {
         {
             e.printStackTrace();
         }
-    }
-
-    private void beaconNotInRange() {
-        mTakeAttendanceBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder1 = new AlertDialog.Builder(DetailedInformationActivity.this);
-                builder1.setMessage("Please go to the location before try to take attendance!");
-                builder1.setCancelable(true);
-
-                builder1.setPositiveButton(
-                        "OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                            }
-                        });
-
-                AlertDialog alert11 = builder1.create();
-                alert11.show();
-            }
-        });
     }
 
     protected static double calculateDistance(int txPower, double rssi) {
@@ -338,7 +314,6 @@ public class DetailedInformationActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         beaconManager.stopRanging(region);
-
         super.onPause();
     }
 
@@ -347,17 +322,44 @@ public class DetailedInformationActivity extends AppCompatActivity {
         btnReport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!isTakeAttendance)
+                if (isTakeAttendance)
                 {
-                    final android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getApplicationContext());
+                    AlertDialog.Builder builder = new AlertDialog.Builder(DetailedInformationActivity.this);
                     builder.setTitle("Attendance Report");
                     builder.setMessage("This subject was taked attendance before.");
-                    builder.setPositiveButton("OK", null);
-                    builder.create().show();
+                    builder.setCancelable(true);
+
+                    builder.setPositiveButton(
+                            "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
                 }
                 else
                 {
-                    dispatchTakePictureIntent();
+                    if (remindDiscover)
+                    {
+                        dispatchTakePictureIntent();
+                    }
+                    else
+                    {
+                        AlertDialog.Builder builder1 = new AlertDialog.Builder(DetailedInformationActivity.this);
+                        builder1.setMessage("Please go to the location before try to take attendance!");
+                        builder1.setCancelable(true);
+
+                        builder1.setPositiveButton(
+                                "OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+
+                        AlertDialog alert11 = builder1.create();
+                        alert11.show();
+                    }
                 }
             }
         });
@@ -406,7 +408,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
-            // send image to server - Tung's part
+            //TODO Verify image and get result
         }
     }
 }
