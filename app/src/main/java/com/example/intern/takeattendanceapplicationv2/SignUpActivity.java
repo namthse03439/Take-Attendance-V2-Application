@@ -1,6 +1,7 @@
 package com.example.intern.takeattendanceapplicationv2;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -99,7 +100,6 @@ public class SignUpActivity extends AppCompatActivity {
                 }, 3000);
     }
 
-
     public void onSignupSuccess() {
         _signupButton.setEnabled(true);
         setResult(RESULT_OK, null);
@@ -110,6 +110,8 @@ public class SignUpActivity extends AppCompatActivity {
         Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_LONG).show();
 
         _signupButton.setEnabled(true);
+
+//        Intent intent = new Intent(SignUpActivity.this, )
     }
 
     public boolean validate() {

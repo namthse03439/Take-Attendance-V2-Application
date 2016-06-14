@@ -101,43 +101,6 @@ public class MainActivity extends AppCompatActivity
         alert12.show();
     }
 
-    void checkLoggedin()
-    {
-        SharedPreferences pref = this.getSharedPreferences("ATK_pref", 0);
-        String auCode = pref.getString("authorizationCode", null);
-
-        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
-        Call<ResponseBody> call = client.getPersonID();
-
-        boolean result = false;
-
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    if (response.code() != 200) {
-                        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
-                        SharedPreferences.Editor editor = pref.edit();
-                        editor.putString("authorizationCode", null);
-                        editor.apply();
-
-                        Intent intent = new Intent(MainActivity.this, LogInActivity.class);
-                        startActivity(intent);
-                    }
-                }
-                catch(Exception e){
-                    System.out.print("Error");
-                }
-
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-            }
-        });
-    }
-
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         android.app.Fragment fragment = null;
@@ -148,7 +111,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
             case 1:{
-                checkLoggedin();
+                GlobalVariable.checkLoggedin(this);
                 fragment = new TrainingFragment();
                 break;
             }
@@ -262,45 +225,6 @@ public class MainActivity extends AppCompatActivity
             super.onAttach(activity);
             ((MainActivity) activity).onSectionAttached(
                     getArguments().getInt(ARG_SECTION_NUMBER));
-        }
-    }
-
-    boolean haveFullTimetable(){
-        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
-        String timeTable = pref.getString("fullTimeTable", null);
-        return timeTable != null;
-    }
-
-    void loadTimetableByWeek(){
-
-        try {
-            SharedPreferences pref = this.getSharedPreferences("ATK_pref", 0);
-            String auCode = pref.getString("authorizationCode", null);
-
-            StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
-            Call<ResponseBody> call = client.getTimetableByWeek();
-
-            call.enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    try {
-                        JSONObject data = new JSONObject(response.body().string());
-                        System.out.print("OK!");
-                    }
-                    catch (Exception e){
-                        System.out.print("Failed!");
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                }
-            });
-
-        }
-        catch(Exception e){
-            System.out.print("load timetable by week exception!");
         }
     }
 

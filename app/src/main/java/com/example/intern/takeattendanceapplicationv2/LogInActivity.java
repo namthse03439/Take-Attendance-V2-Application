@@ -18,6 +18,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.intern.takeattendanceapplicationv2.BaseClass.ErrorClass;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.LoginClass;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
@@ -47,24 +48,9 @@ public class LogInActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
 
-//        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
-//        SharedPreferences.Editor editor = pref.edit();
-//        editor.putString("authorizationCode", null);
-//        editor.apply();
+        GlobalVariable.getFullTimeTable(this);
 
-        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
-        String data = pref.getString("fullTimetable", null);
-        try {
-            JSONArray temp = new JSONArray(data);
-            GlobalVariable.scheduleManager.setSchedule(temp);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        String auCode = pref.getString("authorizationCode", null);
-        if(auCode != null && auCode != "{\"password\":[\"Incorrect username or password.\"]}"){
+        if (GlobalVariable.obtainedAuCode(this)){
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         }
@@ -177,6 +163,9 @@ public class LogInActivity extends AppCompatActivity {
         Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_LONG).show();
 
         _loginButton.setEnabled(true);
+
+        Intent intent = new Intent(this, LogInActivity.class);
+        startActivity(intent);
     }
 
     public boolean validate() {
@@ -202,52 +191,41 @@ public class LogInActivity extends AppCompatActivity {
         return valid;
     }
 
-    public void loginAction(String username, String password){
+    public void loginAction(String username, String password) {
         StringClient client = ServiceGenerator.createService(StringClient.class);
 
         LoginClass up = new LoginClass(username, password);
 
         Call<ResponseBody> call = client.login(up);
 
-//        Response<ResponseBody> response = call.execute();
-        try {
-            call.enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    try {
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    int messageCode = response.code();
+
+                    if (messageCode == 200) {
                         JSONObject data = new JSONObject(response.body().string());
                         String authorizationCode = data.getString("token");
-
-                        int messageCode = response.code();
-
-                        if (messageCode == 200) {
-
-                            SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
-                            SharedPreferences.Editor editor = pref.edit();
-                            editor.putString("authorizationCode", "Bearer " + authorizationCode);
-                            editor.apply();
-
-                            Intent intend = new Intent(LogInActivity.this, MainActivity.class);
-                            startActivity(intend);
-                        } else {
-                            //TODO if messageCode != 200, show some dialog...
-                        }
-                    } catch (Exception e) {
-                        System.out.print("Exception caught Login");
+                        GlobalVariable.setAuCodeInSP(LogInActivity.this, authorizationCode);
+                        Intent intent = new Intent(LogInActivity.this, MainActivity.class);
+                        startActivity(intent);
+                    } else {
+                        ErrorClass.showError(LogInActivity.this, 1);
                     }
+                } catch (Exception e) {
+                    System.out.print("Exception caught Login");
+                    ErrorClass.showError(LogInActivity.this, 2);
                 }
+            }
 
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    //TODO handle when fail
-                    System.out.print("Error Login");
-                }
-            });
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                System.out.print("Error Login");
+                ErrorClass.showError(LogInActivity.this, 3);
+            }
+        });
+
     }
-
 
 }

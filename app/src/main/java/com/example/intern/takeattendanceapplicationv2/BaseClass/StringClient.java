@@ -19,33 +19,17 @@ public interface StringClient {
     @GET("api/home")
     Call<String> getString();
 
-    //    @Headers("Authorization: Bearer WBMXHk5V0LDwQKJ0fasM2KZZ6KySx3f1")
     @GET("user/logout")
     Call<ResponseBody> logout();
 
     @GET("api/check-student")
     Call<ResponseBody> checkStudent();
 
-    @POST("api/post")
-    Call<String> postString(@Body String MothaibaBook);
-
-    @POST("user/login")
-    Call<ResponseBody> login(@Body LoginClass up);
-
-    @POST("user/signup")
-    Call<ResponseBody> signup(@Body SignupClass user);
-
     @GET("user/person-id")
     Call<ResponseBody> getPersonID();
 
     @GET("user/face-id")
     Call<ResponseBody> getFaceIDList();
-
-    @POST("user/set-face-id")
-    Call<ResponseBody> postFaceIDList(@Body ArrayList<String> face_id);
-
-    @POST("user/set-person-id")
-    Call<ResponseBody> postPersonID(@Body String person_id);
 
     @GET("timetable/week?week=1")
     Call<ResponseBody> getTimetableByWeek();
@@ -56,8 +40,22 @@ public interface StringClient {
     @GET("timetable/today")
     Call<ResponseBody> getTimetableToday();
 
+    @POST("user/login")
+    Call<ResponseBody> login(@Body LoginClass up);
+
+    @POST("user/signup")
+    Call<ResponseBody> signup(@Body SignupClass user);
+
+    @POST("user/set-face-id")
+    Call<ResponseBody> postFaceIDList(@Body ArrayList<String> face_id);
+
+    @POST("user/set-person-id")
+    Call<ResponseBody> postPersonID(@Body String person_id);
+
     @POST("timetable/check-attendance")
     Call<ResponseBody> atAttendanceTime(@Body JSONObject isOntime);
 
+    @POST("timetable/take-attendance")
+    Call<ResponseBody> takeAttendance(@Body TakeAttendanceClass toUp);
 
 }

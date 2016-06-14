@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -17,12 +18,19 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.TakeAttendanceClass;
+import com.example.intern.takeattendanceapplicationv2.Fragment.TrainingFragment;
+import com.facepp.http.HttpRequests;
+import com.facepp.http.PostParameters;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -35,6 +43,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Response;
 
 public class DetailedInformationActivity extends AppCompatActivity {
 
@@ -409,6 +421,93 @@ public class DetailedInformationActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
             //TODO Verify image and get result
+            VerifyThread verifyThread = new VerifyThread(mCurrentPhotoPath, getApplicationContext());
+            verifyThread.start();
         }
     }
+}
+
+
+
+class VerifyThread extends Thread{
+    Thread t;
+    String mCurrentPhotoPath = null;
+    Context context;
+    public VerifyThread(String _mCurrentPhotoPath, Context _context){
+        mCurrentPhotoPath = _mCurrentPhotoPath;
+        context = _context;
+    }
+
+    public void run() {
+        HttpRequests httpRequests = new HttpRequests(GlobalVariable.apiKey, GlobalVariable.apiSecret);
+        File imgFile = new File(mCurrentPhotoPath);
+        GlobalVariable.resizeImage(context, mCurrentPhotoPath);
+
+        SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        String personID = GlobalVariable.getThisPersonID(context, auCode);
+        if(personID.compareTo("") != 0){
+            String faceID = GlobalVariable.get1FaceID(context, httpRequests, imgFile);
+            double result = getVerification(httpRequests, personID, faceID);
+
+            sendResultToLocalServer(result);
+        }
+        else{
+            //TODO:
+            System.out.print("untrained person");
+        }
+
+    }
+
+    void sendResultToLocalServer(double result) {
+        int currentIndex = GlobalVariable.scheduleManager.currentLessionIndex;
+        JSONArray schedule = GlobalVariable.scheduleManager.getDailySchedule();
+        try {
+            int timetableID = ((JSONObject) schedule.get(currentIndex)).getInt("timetable_id");
+
+            TakeAttendanceClass toUp = new TakeAttendanceClass(timetableID, result);
+
+            SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+            String auCode = pref.getString("authorizationCode", null);
+
+            StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+            Call<ResponseBody> call = client.takeAttendance(toUp);
+            Response<ResponseBody> response = call.execute();
+            int resCode = response.code();
+            String resStr = response.body().string();
+            JSONObject resJson = new JSONObject(resStr);
+            int resResult = resJson.getInt("result");
+
+            if(resCode == 200) {
+                if (resResult == 1)
+                    Toast.makeText(context, "Attendance recorded sucessfully!", Toast.LENGTH_LONG).show();
+                else
+                    Toast.makeText(context, "Your face doesn't match!", Toast.LENGTH_LONG).show();
+            }
+            else
+                Toast.makeText(context, "Failed to connect local server!", Toast.LENGTH_LONG).show();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            Toast.makeText(context, "Exception when sending result to local server!", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private double getVerification(HttpRequests httpRequests, String personID, String faceID) {
+        double result = 0;
+        PostParameters postParameters = new PostParameters().setPersonId(personID).setFaceId(faceID);
+        try{
+            JSONObject fppResult = httpRequests.recognitionVerify(postParameters);
+            result = fppResult.getDouble("confidence");
+            if(!fppResult.getBoolean("is_same_person"))
+                result = 100 - result;
+        }
+        catch(Exception e){
+            System.out.print("Process interrupted!");
+        }
+
+        return result;
+    }
+
 }
