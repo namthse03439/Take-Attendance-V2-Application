@@ -54,7 +54,10 @@ public class DetailedInformationActivity extends AppCompatActivity {
 
     private BeaconManager beaconManager;
     private Region region;
-    Button mTakeAttendanceBtn;
+
+    Button mBeaconInRangeBtn;
+    Button mCaptureImageBtn;
+
     boolean remindDiscover = false;
     int currentIndex;
     boolean isTakeAttendance;
@@ -64,26 +67,110 @@ public class DetailedInformationActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detailed_information);
-        mTakeAttendanceBtn = (Button) findViewById(R.id.btn_takeAttendance);
 
-        currentIndex = GlobalVariable.scheduleManager.currentLessionIndex;
+        beaconManager = new BeaconManager(this);
+
         isTakeAttendance = GlobalVariable.scheduleManager.isTakeAttendance(currentIndex);
+        currentIndex = GlobalVariable.scheduleManager.currentLessionIndex;
         JSONArray schedule = GlobalVariable.scheduleManager.getDailySchedule();
         try
         {
             subject = schedule.getJSONObject(currentIndex);
+
+            String UUIDs = subject.getString("uuid");
+            int major = Integer.parseInt(subject.getString("major"));
+            int minor = Integer.parseInt(subject.getString("minor"));
+
+            region = new Region("ranged region", UUID.fromString(UUIDs), major, minor);
+
         } catch (Exception e)
         {
             e.printStackTrace();
         }
 
+        initDetailedData();
+
         if (!isTakeAttendance)
         {
-            initDetailedData();
             initBeaconEvent();
         }
 
-        addListenerOnTakeAttendanceButton();
+        mBeaconInRangeBtn = (Button) findViewById(R.id.btn_beaconInRange);
+        mCaptureImageBtn = (Button) findViewById(R.id.btn_captureImage);
+        if (isTakeAttendance)
+        {
+            mBeaconInRangeBtn.setVisibility(Button.INVISIBLE);
+
+        }
+        else
+        {
+            mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#cc0000"));
+            mBeaconInRangeBtn.setTextColor(Color.WHITE);
+        }
+
+        mCaptureImageBtn.setBackgroundColor(Color.parseColor("#008000"));
+        mCaptureImageBtn.setTextColor(Color.WHITE);
+        mCaptureImageBtn.setVisibility(Button.INVISIBLE);
+
+        addListenerToBeaconInRangerBtn();
+        addListenerToCaptureImageBtn();
+    }
+
+    private void addListenerToBeaconInRangerBtn()
+    {
+        mBeaconInRangeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (remindDiscover)
+                {
+                    AlertDialog.Builder builder2 = new AlertDialog.Builder(DetailedInformationActivity.this);
+                    builder2.setMessage("Please capture image to take your attendance!");
+                    builder2.setCancelable(true);
+
+                    builder2.setPositiveButton(
+                            "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+
+                    AlertDialog alert12 = builder2.create();
+                    alert12.show();
+                }
+                else
+                {
+                    AlertDialog.Builder builder2 = new AlertDialog.Builder(DetailedInformationActivity.this);
+                    builder2.setMessage("Please stay close to the beacon\n " +
+                            "and wait Beacon In Range change to green color!");
+                    builder2.setCancelable(true);
+
+                    builder2.setPositiveButton(
+                            "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+
+                    AlertDialog alert12 = builder2.create();
+                    alert12.show();
+                }
+            }
+        });
+    }
+
+    private void addListenerToCaptureImageBtn()
+    {
+        mCaptureImageBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (remindDiscover)
+                {
+                    dispatchTakePictureIntent();
+                }
+            }
+        });
     }
 
     String getTime()
@@ -204,9 +291,6 @@ public class DetailedInformationActivity extends AppCompatActivity {
 
     private void initBeaconEvent()
     {
-        mTakeAttendanceBtn.setBackgroundColor(Color.RED);
-
-        beaconManager = new BeaconManager(this);
         beaconManager.setRangingListener(new BeaconManager.RangingListener() {
             @Override
             public void onBeaconsDiscovered(Region region, List<Beacon> list) {
@@ -217,7 +301,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
                     double rssi = beacon.getRssi();
                     double distance = calculateDistance(txPower, rssi);
 
-                    if (distance <= 5.0) {
+                    if (distance <= 3.0) {
                         if (!remindDiscover) {
                             remindDiscover = true;
                             AlertDialog.Builder builder2 = new AlertDialog.Builder(DetailedInformationActivity.this);
@@ -234,67 +318,93 @@ public class DetailedInformationActivity extends AppCompatActivity {
 
                             AlertDialog alert12 = builder2.create();
                             alert12.show();
-                        }
 
-                        mTakeAttendanceBtn.setBackgroundColor(Color.GREEN);
+                            mCaptureImageBtn.setVisibility(Button.VISIBLE);
+                            mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#008000"));
+                        }
                     } else {
-                        mTakeAttendanceBtn.setBackgroundColor(Color.RED);
+                        mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#cc0000"));
                         remindDiscover = false;
+                        mCaptureImageBtn.setVisibility(Button.INVISIBLE);
                     }
                 }
             }
         });
 
-        try
-        {
-            String UUIDs = subject.getString("uuid");
-            int major = Integer.parseInt(subject.getString("major"));
-            int minor = Integer.parseInt(subject.getString("minor"));
+        beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
+            @Override
+            public void onServiceReady() {
+                try
+                {
+                    String UUIDs = subject.getString("uuid");
+                    int major = Integer.parseInt(subject.getString("major"));
+                    int minor = Integer.parseInt(subject.getString("minor"));
 
-            region = new Region("ranged region", UUID.fromString(UUIDs), major, minor);
+                    region = new Region("ranged region", UUID.fromString(UUIDs), major, minor);
+                    beaconManager.startRanging(region);
 
-            beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
-                @Override
-                public void onServiceReady() {
-                    try
-                    {
-                        ProgressBar progressBar = new ProgressBar(DetailedInformationActivity.this);
-                        ObjectAnimator animation =  ObjectAnimator.ofInt (progressBar, "progress", 0, 5000);
-
-                        animation.setDuration(5000);
-                        animation.setInterpolator (new DecelerateInterpolator());
-                        animation.start ();
-
-                        String UUIDs = subject.getString("uuid");
-                        int major = Integer.parseInt(subject.getString("major"));
-                        int minor = Integer.parseInt(subject.getString("minor"));
-
-                        beaconManager.startMonitoring(new Region("monitored region",
-                                UUID.fromString(UUIDs), major, minor));
-                    } catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
+//                    beaconManager.startMonitoring(new Region("monitored region",
+//                            UUID.fromString(UUIDs), major, minor));
+                } catch (Exception e)
+                {
+                    e.printStackTrace();
                 }
-            });
+            }
+        });
 
-            beaconManager.setMonitoringListener(new BeaconManager.MonitoringListener() {
-                @Override
-                public void onEnteredRegion(Region region, List<Beacon> list) {
+//        try
+//        {
+//            String UUIDs = subject.getString("uuid");
+//            int major = Integer.parseInt(subject.getString("major"));
+//            int minor = Integer.parseInt(subject.getString("minor"));
+//
+//            region = new Region("ranged region", UUID.fromString(UUIDs), major, minor);
+//
+//            beaconManager.startRanging(region);
 
-                }
-
-                @Override
-                public void onExitedRegion(Region region) {
-
-                }
-            });
+//            beaconManager.setMonitoringListener(new BeaconManager.MonitoringListener() {
+//                @Override
+//                public void onEnteredRegion(Region region, List<Beacon> list) {
+//                    AlertDialog.Builder builder2 = new AlertDialog.Builder(DetailedInformationActivity.this);
+//                    builder2.setMessage("onEnteredRegion!");
+//                    builder2.setCancelable(true);
+//
+//                    builder2.setPositiveButton(
+//                            "OK",
+//                            new DialogInterface.OnClickListener() {
+//                                public void onClick(DialogInterface dialog, int id) {
+//                                    dialog.cancel();
+//                                }
+//                            });
+//
+//                    AlertDialog alert12 = builder2.create();
+//                    alert12.show();
+//                }
+//
+//                @Override
+//                public void onExitedRegion(Region region) {
+//                    AlertDialog.Builder builder2 = new AlertDialog.Builder(DetailedInformationActivity.this);
+//                    builder2.setMessage("onExitedRegion!");
+//                    builder2.setCancelable(true);
+//
+//                    builder2.setPositiveButton(
+//                            "OK",
+//                            new DialogInterface.OnClickListener() {
+//                                public void onClick(DialogInterface dialog, int id) {
+//                                    dialog.cancel();
+//                                }
+//                            });
+//
+//                    AlertDialog alert12 = builder2.create();
+//                    alert12.show();
+//                }
+//            });
 
             beaconManager.setForegroundScanPeriod(5000, 2000);
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+//        } catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
     }
 
     protected static double calculateDistance(int txPower, double rssi) {
@@ -327,54 +437,6 @@ public class DetailedInformationActivity extends AppCompatActivity {
     protected void onPause() {
         beaconManager.stopRanging(region);
         super.onPause();
-    }
-
-    private void addListenerOnTakeAttendanceButton() {
-        Button btnReport = (Button) findViewById(R.id.btn_takeAttendance);
-        btnReport.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isTakeAttendance)
-                {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(DetailedInformationActivity.this);
-                    builder.setTitle("Attendance Report");
-                    builder.setMessage("This subject was taked attendance before.");
-                    builder.setCancelable(true);
-
-                    builder.setPositiveButton(
-                            "OK",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
-                            });
-                }
-                else
-                {
-                    if (remindDiscover)
-                    {
-                        dispatchTakePictureIntent();
-                    }
-                    else
-                    {
-                        AlertDialog.Builder builder1 = new AlertDialog.Builder(DetailedInformationActivity.this);
-                        builder1.setMessage("Please go to the location before try to take attendance!");
-                        builder1.setCancelable(true);
-
-                        builder1.setPositiveButton(
-                                "OK",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        dialog.cancel();
-                                    }
-                                });
-
-                        AlertDialog alert11 = builder1.create();
-                        alert11.show();
-                    }
-                }
-            }
-        });
     }
 
     String mCurrentPhotoPath;
