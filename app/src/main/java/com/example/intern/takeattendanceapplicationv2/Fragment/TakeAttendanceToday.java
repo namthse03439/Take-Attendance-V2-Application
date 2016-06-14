@@ -30,6 +30,7 @@ import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
 import com.example.intern.takeattendanceapplicationv2.DetailedInformationActivity;
 import com.example.intern.takeattendanceapplicationv2.Information.ScheduleManager;
 import com.example.intern.takeattendanceapplicationv2.MainActivity;
+import com.example.intern.takeattendanceapplicationv2.Preferences;
 import com.example.intern.takeattendanceapplicationv2.R;
 
 import org.json.JSONArray;
@@ -225,24 +226,6 @@ public class TakeAttendanceToday extends Fragment {
             tvs.setGravity(Gravity.CENTER);
             tvs.setTextColor(Color.WHITE);
 
-
-
-            final int status = Integer.parseInt(subject.getString("status"));
-            switch (status) {
-                case 0:
-                    tvs.setBackgroundColor(Color.LTGRAY);
-                    break;
-                case 1:
-                    tvs.setBackgroundColor(Color.GREEN);
-                    break;
-                case 2:
-                    tvs.setBackgroundColor(Color.YELLOW);
-                    break;
-                case 3:
-                    tvs.setBackgroundColor(Color.RED);
-                    break;
-            }
-
             tvs.setText(result);
 
             TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, Gravity.CENTER);
@@ -250,7 +233,28 @@ public class TakeAttendanceToday extends Fragment {
             tvs.setLayoutParams(params);
 
             GradientDrawable gd = new GradientDrawable();
-            gd.setColor(0xFFCCFF99); // Changes this drawbale to use a single color instead of a gradient
+
+            final int status = Integer.parseInt(subject.getString("status"));
+            switch (status) {
+                case 0:
+                    gd.setColor(0xFFC0C0C0);
+                    //tvs.setBackgroundColor(Color.LTGRAY);
+                    break;
+                case 1:
+                    gd.setColor(0xFF00FF7F);
+                    //tvs.setBackgroundColor(Color.GREEN);
+                    break;
+                case 2:
+                    gd.setColor(0xFFFFA500);
+                    //tvs.setBackgroundColor(Color.YELLOW);
+                    break;
+                case 3:
+                    gd.setColor(0xFFCC0000);
+                    //tvs.setBackgroundColor(Color.RED);
+                    break;
+            }
+
+
             gd.setCornerRadius(5);
             gd.setStroke(1, 0xFF000000);
             tvs.setBackgroundDrawable(gd);
@@ -277,7 +281,6 @@ public class TakeAttendanceToday extends Fragment {
             e.printStackTrace();
         }
     }
-
 
     public void displayScheduleToday()
     {
@@ -306,7 +309,6 @@ public class TakeAttendanceToday extends Fragment {
         createSubjectView(false, time, 17, -1, null);
     }
 
-
     private void setTimeView()
     {
         calendar = Calendar.getInstance();
@@ -326,10 +328,12 @@ public class TakeAttendanceToday extends Fragment {
         setTimeView();
 
         try {
-            final ProgressDialog progressDialog = new ProgressDialog(getActivity(), R.style.AppTheme);
-            progressDialog.setIndeterminate(true);
-            progressDialog.setMessage("Loading data from server...");
-            progressDialog.show();
+//            final ProgressDialog progressDialog = new ProgressDialog(getActivity(), R.style.AppTheme);
+//            progressDialog.setIndeterminate(true);
+//            progressDialog.setMessage("Loading data from server...");
+//            progressDialog.show();
+
+            Preferences.showLoading(context, "Setup", "Loading data from server...");
 
             SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
             String auCode = pref.getString("authorizationCode", null);
@@ -340,6 +344,8 @@ public class TakeAttendanceToday extends Fragment {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     try{
+                        Preferences.dismissLoading();
+
                         JSONArray data = new JSONArray(response.body().string());
                         GlobalVariable.scheduleManager.setDailySchedule(data);
 
@@ -358,20 +364,6 @@ public class TakeAttendanceToday extends Fragment {
                     System.out.print("Tung");
                 }
             });
-
-
-//            while(GlobalVariable.loadedTimetableToday == false){}
-//            GlobalVariable.loadedTimetableToday = false;
-
-            new android.os.Handler().postDelayed(
-                    new Runnable() {
-                        public void run() {
-                            progressDialog.dismiss();
-                        }
-                    }, 1000);
-
-            System.out.print("OK!");
-
         }
 
         catch(Exception e){

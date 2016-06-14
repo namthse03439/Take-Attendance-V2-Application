@@ -47,11 +47,6 @@ public class LogInActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
 
-//        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
-//        SharedPreferences.Editor editor = pref.edit();
-//        editor.putString("authorizationCode", null);
-//        editor.apply();
-
         SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
         String data = pref.getString("fullTimetable", null);
         try {
@@ -124,10 +119,7 @@ public class LogInActivity extends AppCompatActivity {
 
         _loginButton.setEnabled(false);
 
-        final ProgressDialog progressDialog = new ProgressDialog(LogInActivity.this, R.style.AppTheme);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setMessage("Authenticating...");
-        progressDialog.show();
+        Preferences.showLoading(this, "Log In", "Authenticating...");
 
         String username = _usernameText.getText().toString();
         String password = _passwordText.getText().toString();
@@ -138,15 +130,7 @@ public class LogInActivity extends AppCompatActivity {
 
         //---------------------------------------
 
-        new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        // On complete call either onLoginSuccess or onLoginFailed
-                        onLoginSuccess();
-                        // onLoginFailed();
-                        progressDialog.dismiss();
-                    }
-                }, 3000);
+        Preferences.dismissLoading();
     }
 
 
