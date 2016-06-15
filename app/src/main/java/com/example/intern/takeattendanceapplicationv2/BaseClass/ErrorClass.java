@@ -1,8 +1,11 @@
 package com.example.intern.takeattendanceapplicationv2.BaseClass;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -34,30 +37,54 @@ public class ErrorClass {
             "Exception caught while send face ID List to local server - TrainingFragment.postFaceIDListtoLocalServer", // 14
             "Receive message code != 200 - TrainingFragment.postFaceIDListtoLocalServer", // 15
             "Exception caught while create person and get person ID - TrainingFragment.create1Person", // 16
-            ""
+            "Exception caught while loading full time table - LoginActivity.onCreate", // 17
+            "Exception caught while post person ID to local server - TrainingFragment.postPersonIDtoLocalServer", // 18
+            "Exception caught when sending result to local server! - VerifyThread.sendResultToLocalServer", // 19
+            "Failed to connect local server! - VerifyThread.sendResultToLocalServer", // 20
+            "Exception caught while get result from Face++ - VerifyThread.getVerification", // 21
+            "Exception caught while create File - DetailedInformationActivity.dispatchTakePictureIntent", // 22
+            "Exception caught while connect to beacon - DetailedInformationActivity.beaconManager.connect", // 23
+            "DetailedInformationActivity.initDetailedData", // 24
+            "DetailedInformationActivity.getTime", // 25
+            "DetailedInformationActivity.onCreate", // 26
+            "Error occurs when sign up - SignUpActivity.signupAction", // 27
+            "Connection error when sign up - SignUpActivity.signupAction", // 28
+            "findViewById exception- DetailedInformationActivity.initDetailedData", // 29
+            "Cannot detect any face from this photo - GlobalVariable.get1FaceID"
 
     };
 
-    public static void showError(final Context context, int errorCode){
-//        Toast.makeText(context, errorList[errorCode], Toast.LENGTH_LONG).show();
-        final Dialog dialog = new Dialog(context);
-        dialog.setTitle("Error");
-        dialog.setContentView(R.layout.show_error);
+    public static void showError(final Activity activity, final int errorCode) {
 
-        TextView mErrorText = (TextView) dialog.findViewById(R.id.error_text);
-        mErrorText.setText(errorList[errorCode]);
+        activity.runOnUiThread(new Runnable() {
+            public void run() {
 
-        Button mOkButton = (Button) dialog.findViewById(R.id.ok_button);
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(
+                                activity);
 
-        dialog.show();
+                        builder.setMessage(errorList[errorCode]);
+                        builder.setCancelable(false);
+                        builder.setPositiveButton("OK",
+                                new DialogInterface.OnClickListener() {
 
-        mOkButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.cancel();
-                Intent intent = new Intent(context, context.getClass());
-                context.startActivity(intent);
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+
+                        AlertDialog alert = builder.create();
+                        alert.show();
+                    }
+                });
+
             }
         });
+
+
     }
+
+
 }
