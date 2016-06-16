@@ -14,7 +14,10 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -63,6 +66,8 @@ public class DetailedInformationActivity extends AppCompatActivity {
     boolean isTakeAttendance;
     JSONObject subject;
 
+    Animation animation = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,30 +95,45 @@ public class DetailedInformationActivity extends AppCompatActivity {
 
         initDetailedData();
 
-        if (!isTakeAttendance)
-        {
-            initBeaconEvent();
-        }
-
         mBeaconInRangeBtn = (Button) findViewById(R.id.btn_beaconInRange);
+        mBeaconInRangeBtn.setWidth(120);
+        mBeaconInRangeBtn.setLines(2);
+
         mCaptureImageBtn = (Button) findViewById(R.id.btn_captureImage);
+        mCaptureImageBtn.setWidth(120);
+        mCaptureImageBtn.setLines(2);
+
         if (isTakeAttendance)
         {
             mBeaconInRangeBtn.setVisibility(Button.INVISIBLE);
-
+            mCaptureImageBtn.setVisibility(Button.INVISIBLE);
         }
         else
         {
+            initBeaconEvent();
+            initBlinkingButton();
+
+            mBeaconInRangeBtn.startAnimation(animation);
+            mBeaconInRangeBtn.setVisibility(Button.VISIBLE);
             mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#cc0000"));
             mBeaconInRangeBtn.setTextColor(Color.WHITE);
+            addListenerToBeaconInRangerBtn();
+
+            mCaptureImageBtn.setVisibility(Button.INVISIBLE);
+            mCaptureImageBtn.setBackgroundColor(Color.parseColor("#008000"));
+            mCaptureImageBtn.setTextColor(Color.WHITE);
+            mCaptureImageBtn.setVisibility(Button.INVISIBLE);
+            addListenerToCaptureImageBtn();
         }
+    }
 
-        mCaptureImageBtn.setBackgroundColor(Color.parseColor("#008000"));
-        mCaptureImageBtn.setTextColor(Color.WHITE);
-        mCaptureImageBtn.setVisibility(Button.INVISIBLE);
-
-        addListenerToBeaconInRangerBtn();
-        addListenerToCaptureImageBtn();
+    private void initBlinkingButton()
+    {
+        animation = new AlphaAnimation(1, 0); // Change alpha from fully visible to invisible
+        animation.setDuration(500); // duration - half a second
+        animation.setInterpolator(new LinearInterpolator()); // do not alter animation rate
+        animation.setRepeatCount(Animation.INFINITE); // Repeat animation infinitely
+        animation.setRepeatMode(Animation.REVERSE); // Reverse animation at the end so the button will fade back in
     }
 
     private void addListenerToBeaconInRangerBtn()
@@ -165,6 +185,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
         mCaptureImageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                v.clearAnimation();
                 if (remindDiscover)
                 {
                     dispatchTakePictureIntent();
@@ -319,12 +340,19 @@ public class DetailedInformationActivity extends AppCompatActivity {
                             AlertDialog alert12 = builder2.create();
                             alert12.show();
 
-                            mCaptureImageBtn.setVisibility(Button.VISIBLE);
+                            mBeaconInRangeBtn.clearAnimation();
                             mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#008000"));
+
+                            mCaptureImageBtn.setVisibility(Button.VISIBLE);
+                            mCaptureImageBtn.startAnimation(animation);
                         }
                     } else {
-                        mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#cc0000"));
                         remindDiscover = false;
+
+                        mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#cc0000"));
+                        mBeaconInRangeBtn.startAnimation(animation);
+
+                        mCaptureImageBtn.clearAnimation();
                         mCaptureImageBtn.setVisibility(Button.INVISIBLE);
                     }
                 }
@@ -486,10 +514,12 @@ public class DetailedInformationActivity extends AppCompatActivity {
             VerifyThread verifyThread = new VerifyThread(mCurrentPhotoPath, getApplicationContext());
             verifyThread.start();
         }
+        else
+        {
+            mCaptureImageBtn.startAnimation(animation);
+        }
     }
 }
-
-
 
 class VerifyThread extends Thread{
     Thread t;
