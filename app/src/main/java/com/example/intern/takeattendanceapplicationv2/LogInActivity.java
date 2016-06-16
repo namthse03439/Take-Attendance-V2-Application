@@ -58,6 +58,7 @@ public class LogInActivity extends AppCompatActivity {
                 GlobalVariable.scheduleManager.setSchedule(temp);
             } catch (Exception e) {
                 e.printStackTrace();
+                ErrorClass.showError(this, 17);
             }
 
             Intent intent = new Intent(this, MainActivity.class);

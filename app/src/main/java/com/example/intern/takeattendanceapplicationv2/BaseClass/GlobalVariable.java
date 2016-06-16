@@ -1,5 +1,6 @@
 package com.example.intern.takeattendanceapplicationv2.BaseClass;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,6 +18,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.security.AccessControlContext;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -34,7 +36,7 @@ public class GlobalVariable {
     public static boolean loadedTimetableToday = false;
     public static final double imageArea = 200000;
 
-    public static void resizeImage(Context context, String mCurrentPhotoPath) {
+    public static void resizeImage(Activity activity, String mCurrentPhotoPath) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, options);
@@ -57,19 +59,19 @@ public class GlobalVariable {
             out.close();
         }
         catch(Exception e){
-            ErrorClass.showError(context, 5);
+            ErrorClass.showError(activity, 5);
             e.printStackTrace();
         }
     }
 
-    public static boolean haveFullTimetable(Context context) {
-        SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+    public static boolean haveFullTimetable(Activity activity) {
+        SharedPreferences pref = activity.getSharedPreferences("ATK_pref", 0);
         String timeTable = pref.getString("fullTimeTable", null);
         return timeTable != null;
     }
 
-    public static void checkLoggedin(final Context context) {
-        SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+    public static void checkLoggedin(final Activity activity) {
+        SharedPreferences pref = activity.getSharedPreferences("ATK_pref", 0);
         String auCode = pref.getString("authorizationCode", null);
 
         StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
@@ -82,32 +84,32 @@ public class GlobalVariable {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
                     if (response.code() != 200) {
-                        SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+                        SharedPreferences pref = activity.getSharedPreferences("ATK_pref", 0);
                         SharedPreferences.Editor editor = pref.edit();
                         editor.putString("authorizationCode", null);
                         editor.apply();
 
-                        Intent intent = new Intent(context, LogInActivity.class);
-                        context.startActivity(intent);
+                        Intent intent = new Intent(activity, LogInActivity.class);
+                        activity.startActivity(intent);
                     }
                 }
                 catch(Exception e){
                     e.printStackTrace();
-                    ErrorClass.showError(context, 6);
+                    ErrorClass.showError(activity, 6);
                 }
 
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                ErrorClass.showError(context, 7);
+                ErrorClass.showError(activity, 7);
             }
         });
     }
 
-    public static void loadTimetableByWeek(final Context context) {
+    public static void loadTimetableByWeek(final Activity activity) {
 
-        SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+        SharedPreferences pref = activity.getSharedPreferences("ATK_pref", 0);
         String auCode = pref.getString("authorizationCode", null);
 
         StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
@@ -122,20 +124,20 @@ public class GlobalVariable {
                 }
                 catch (Exception e){
                     e.printStackTrace();
-                    ErrorClass.showError(context, 8);
+                    ErrorClass.showError(activity, 8);
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                ErrorClass.showError(context, 9);
+                ErrorClass.showError(activity, 9);
             }
         });
 
     }
 
-    public static void getFullTimeTable(Context context) {
-        SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+    public static void getFullTimeTable(Activity activity) {
+        SharedPreferences pref = activity.getSharedPreferences("ATK_pref", 0);
         String data = pref.getString("fullTimetable", "[]");
         try {
             JSONArray temp = new JSONArray(data);
@@ -143,13 +145,13 @@ public class GlobalVariable {
         }
         catch (Exception e)
         {
-            ErrorClass.showError(context, 0);
+            ErrorClass.showError(activity, 0);
             e.printStackTrace();
         }
     }
 
-    public static boolean obtainedAuCode (Context context) {
-        SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+    public static boolean obtainedAuCode (Activity activity) {
+        SharedPreferences pref = activity.getSharedPreferences("ATK_pref", 0);
         String auCode = pref.getString("authorizationCode", null);
         if (auCode != null && auCode != "{\"password\":[\"Incorrect username or password.\"]}"){
             return true;
@@ -157,14 +159,14 @@ public class GlobalVariable {
         return false;
     }
 
-    public static void setAuCodeInSP(Context context, String authorizationCode) {
-        SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+    public static void setAuCodeInSP(Activity activity, String authorizationCode) {
+        SharedPreferences pref = activity.getSharedPreferences("ATK_pref", 0);
         SharedPreferences.Editor editor = pref.edit();
         editor.putString("authorizationCode", "Bearer " + authorizationCode);
         editor.apply();
     }
 
-    public static String getThisPersonID(Context context, String auCode) {
+    public static String getThisPersonID(Activity activity, String auCode) {
 
         String personID = null;
 
@@ -178,13 +180,13 @@ public class GlobalVariable {
         }
         catch(Exception e){
             e.printStackTrace();
-            ErrorClass.showError(context, 10);
+            ErrorClass.showError(activity, 10);
         }
 
         return personID;
     }
 
-    public static String get1FaceID(Context context, HttpRequests httpRequests, File imgFile){
+    public static String get1FaceID(Activity activity, HttpRequests httpRequests, File imgFile){
         String faceID = null;
         try {
             PostParameters postParameters = new PostParameters().setImg(imgFile).setMode("oneface");
@@ -193,8 +195,10 @@ public class GlobalVariable {
         }
         catch(Exception e){
             e.printStackTrace();
-            ErrorClass.showError(context, 11);
+            ErrorClass.showError(activity, 11);
         }
+        if(faceID == null)
+            ErrorClass.showError(activity, 30);
         return faceID;
     }
 }

@@ -3,6 +3,8 @@ package com.example.intern.takeattendanceapplicationv2.Information;
 /**
  * Created by Sonata on 6/3/2016.
  */
+import com.example.intern.takeattendanceapplicationv2.BaseClass.ErrorClass;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -60,6 +62,7 @@ public class ScheduleManager {
         catch (Exception e)
         {
             e.printStackTrace();
+            //TODO: show error
         }
 
         return data;

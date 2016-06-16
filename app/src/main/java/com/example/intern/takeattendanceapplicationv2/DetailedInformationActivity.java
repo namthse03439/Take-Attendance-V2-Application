@@ -1,6 +1,7 @@
 package com.example.intern.takeattendanceapplicationv2;
 
 import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -27,7 +28,9 @@ import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.ErrorClass;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.Notification;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.TakeAttendanceClass;
@@ -91,6 +94,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
         } catch (Exception e)
         {
             e.printStackTrace();
+            ErrorClass.showError(this, 26);
         }
 
         initDetailedData();
@@ -207,6 +211,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
         catch (Exception e)
         {
             e.printStackTrace();
+            ErrorClass.showError(this, 25);
         }
 
         return result;
@@ -301,12 +306,14 @@ public class DetailedInformationActivity extends AppCompatActivity {
                 } catch (Exception e)
                 {
                     e.printStackTrace();
+                    ErrorClass.showError(this, 29);
                 }
             }
         }
         catch (Exception e)
         {
             e.printStackTrace();
+            ErrorClass.showError(this, 24);
         }
     }
 
@@ -376,6 +383,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
                 } catch (Exception e)
                 {
                     e.printStackTrace();
+                    ErrorClass.showError(DetailedInformationActivity.this, 23);
                 }
             }
         });
@@ -497,6 +505,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
             } catch (IOException ex) {
                 // Error occurred while creating the File
                 ex.printStackTrace();
+                ErrorClass.showError(this, 22);
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
@@ -510,9 +519,10 @@ public class DetailedInformationActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
-            //TODO Verify image and get result
-            VerifyThread verifyThread = new VerifyThread(mCurrentPhotoPath, getApplicationContext());
+
+            VerifyThread verifyThread = new VerifyThread(mCurrentPhotoPath, this);
             verifyThread.start();
+
         }
         else
         {
@@ -524,35 +534,38 @@ public class DetailedInformationActivity extends AppCompatActivity {
 class VerifyThread extends Thread{
     Thread t;
     String mCurrentPhotoPath = null;
-    Context context;
-    public VerifyThread(String _mCurrentPhotoPath, Context _context){
+    Activity activity;
+    public VerifyThread(String _mCurrentPhotoPath, Activity _activity){
         mCurrentPhotoPath = _mCurrentPhotoPath;
-        context = _context;
+        activity = _activity;
     }
 
     public void run() {
+
+        Preferences.showLoading(activity, "Verifying on progress ...", "");
+
         HttpRequests httpRequests = new HttpRequests(GlobalVariable.apiKey, GlobalVariable.apiSecret);
         File imgFile = new File(mCurrentPhotoPath);
-        GlobalVariable.resizeImage(context, mCurrentPhotoPath);
+        GlobalVariable.resizeImage(activity, mCurrentPhotoPath);
 
-        SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+        SharedPreferences pref = activity.getSharedPreferences("ATK_pref", 0);
         String auCode = pref.getString("authorizationCode", null);
 
-        String personID = GlobalVariable.getThisPersonID(context, auCode);
+        String personID = GlobalVariable.getThisPersonID(activity, auCode);
         if(personID.compareTo("") != 0){
-            String faceID = GlobalVariable.get1FaceID(context, httpRequests, imgFile);
+            String faceID = GlobalVariable.get1FaceID(activity, httpRequests, imgFile);
             double result = getVerification(httpRequests, personID, faceID);
 
-            sendResultToLocalServer(result);
+            JSONObject serverResult = sendResultToLocalServer(result); //TODO: a Nam lam gi thi lam
         }
         else{
-            //TODO:
-            System.out.print("untrained person");
+            Notification.showMessage(activity, 3);
         }
-
+        Preferences.dismissLoading();
     }
 
-    void sendResultToLocalServer(double result) {
+    JSONObject sendResultToLocalServer(double result) {
+
         int currentIndex = GlobalVariable.scheduleManager.currentLessionIndex;
         JSONArray schedule = GlobalVariable.scheduleManager.getDailySchedule();
         try {
@@ -560,30 +573,34 @@ class VerifyThread extends Thread{
 
             TakeAttendanceClass toUp = new TakeAttendanceClass(timetableID, result);
 
-            SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+            SharedPreferences pref = activity.getSharedPreferences("ATK_pref", 0);
             String auCode = pref.getString("authorizationCode", null);
 
             StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
             Call<ResponseBody> call = client.takeAttendance(toUp);
             Response<ResponseBody> response = call.execute();
             int resCode = response.code();
-            String resStr = response.body().string();
-            JSONObject resJson = new JSONObject(resStr);
-            int resResult = resJson.getInt("result");
 
-            if(resCode == 200) {
-                if (resResult == 1)
-                    Toast.makeText(context, "Attendance recorded sucessfully!", Toast.LENGTH_LONG).show();
-                else
-                    Toast.makeText(context, "Your face doesn't match!", Toast.LENGTH_LONG).show();
+            if(resCode == 200) { // successful
+                String resStr = response.body().string();
+                JSONObject resJson = new JSONObject(resStr);
+                Notification.showMessage(activity, 1);
+                return (resJson);
             }
-            else
-                Toast.makeText(context, "Failed to connect local server!", Toast.LENGTH_LONG).show();
+            else if(resCode == 400) { // face doesn't match
+                Notification.showMessage(activity, 2);
+                return null;
+            }
+            else {
+                ErrorClass.showError(activity, 20);
+                return null;
+            }
         }
         catch(Exception e){
             e.printStackTrace();
-            Toast.makeText(context, "Exception when sending result to local server!", Toast.LENGTH_LONG).show();
+            ErrorClass.showError(activity, 19);
         }
+        return null;
     }
 
     private double getVerification(HttpRequests httpRequests, String personID, String faceID) {
@@ -597,6 +614,7 @@ class VerifyThread extends Thread{
         }
         catch(Exception e){
             System.out.print("Process interrupted!");
+            ErrorClass.showError(activity, 21);
         }
 
         return result;

@@ -12,6 +12,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.intern.takeattendanceapplicationv2.BaseClass.ErrorClass;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.Notification;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.SignupClass;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
@@ -183,22 +185,31 @@ public class SignUpActivity extends AppCompatActivity {
                         SharedPreferences.Editor editor = pref.edit();
                         editor.putString("authorizationCode", "Bearer " + authorizationCode);
                         editor.apply();
+
+                        Notification.showMessage(SignUpActivity.this, 4);
+
+                        Intent intent = new Intent(SignUpActivity.this, LogInActivity.class);
+                        startActivity(intent);
                     }
                     else{
-                        //TODO: handle when cannot signup
+                        // handle when cannot signup
+                        Notification.showMessage(SignUpActivity.this, 5);
+                        Intent intent = new Intent(SignUpActivity.this, SignUpActivity.class);
+                        startActivity(intent);
                     }
 
-                    //TODO: handle when getting response
                 }
                 catch(Exception e){
-                    System.out.print("Not ok");
-                    //TODO: handle when not getting response
+                    e.printStackTrace();
+                    ErrorClass.showError(SignUpActivity.this, 27);
+                    Intent intent = new Intent(SignUpActivity.this, SignUpActivity.class);
+                    startActivity(intent);
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                System.out.print("ERROR Signup");
+                ErrorClass.showError(SignUpActivity.this, 28);
             }
         });
     }

@@ -21,10 +21,12 @@ import android.view.ViewGroup;
 
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ErrorClass;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.Notification;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
 import com.example.intern.takeattendanceapplicationv2.LogInActivity;
 import com.example.intern.takeattendanceapplicationv2.MainActivity;
+import com.example.intern.takeattendanceapplicationv2.Preferences;
 import com.example.intern.takeattendanceapplicationv2.R;
 import com.facepp.http.HttpRequests;
 import com.facepp.http.PostParameters;
@@ -223,8 +225,8 @@ public class TrainingFragment extends Fragment {
 
 
     void trainingFunction() {
-        Context context = this.context;
-        GlobalVariable.resizeImage(context, mCurrentPhotoPath);
+        Activity activity = this.getActivity();
+        GlobalVariable.resizeImage(activity, mCurrentPhotoPath);
 
         TrainThread trainThread = new TrainThread(mCurrentPhotoPath, context);
         trainThread.start();
@@ -236,25 +238,27 @@ public class TrainingFragment extends Fragment {
 class TrainThread extends Thread{
     Thread t;
     String mCurrentPhotoPath = null;
-    Context context;
+    Activity activity;
 
-    public TrainThread(String _mCurrentPhotoPath, Context _context){
+    public TrainThread(String _mCurrentPhotoPath, Activity _activity){
         mCurrentPhotoPath = _mCurrentPhotoPath;
 //        mCurrentPhotoPath = "Removable/MicroSD/corel1000/minority/1.jpg";
 //        mCurrentPhotoPath = "/sdcard/Pictures/resized.jpg";
-        context = _context;
+        activity = _activity ;
     }
 
     public void run(){
 
+        Preferences.showLoading(activity, "Training on progress ...", "");
+
         HttpRequests httpRequests = new HttpRequests(GlobalVariable.apiKey, GlobalVariable.apiSecret);
         File imgFile = new File(mCurrentPhotoPath);
 
-        SharedPreferences pref = context.getSharedPreferences("ATK_pref", 0);
+        SharedPreferences pref = activity.getSharedPreferences("ATK_pref", 0);
         String auCode = pref.getString("authorizationCode", null);
 
-        String newFaceID = GlobalVariable.get1FaceID(context, httpRequests, imgFile);
-        String personID = GlobalVariable.getThisPersonID(context, auCode);
+        String newFaceID = GlobalVariable.get1FaceID(activity, httpRequests, imgFile);
+        String personID = GlobalVariable.getThisPersonID(activity, auCode);
 
         if(personID.compareTo("") != 0){ //this person has been trained before
 
@@ -269,8 +273,10 @@ class TrainThread extends Thread{
             faceIDList.add(newFaceID);
             postFaceIDListtoLocalServer(auCode, faceIDList);
         }
-        //TODO: Show notification about sucessful training
-        System.out.print("Trained OK!");
+        //Show notification about sucessful training
+        Preferences.dismissLoading();
+        Notification.showMessage(activity, 0);
+
     }
 
     void postPersonIDtoLocalServer(String auCode, String personID){
@@ -282,7 +288,8 @@ class TrainThread extends Thread{
             int messageCode = response.code();
         }
         catch(Exception e){
-            System.out.print("Error get this faceID list");
+            e.printStackTrace();
+            ErrorClass.showError(activity, 18);
         }
 
     }
@@ -300,7 +307,7 @@ class TrainThread extends Thread{
         }
         catch (Exception e){
             e.printStackTrace();
-            ErrorClass.showError(context, 16);
+            ErrorClass.showError(activity, 16);
         }
 
         return personID;
@@ -313,13 +320,12 @@ class TrainThread extends Thread{
             Response<ResponseBody> response = call.execute();
             int messageCode = response.code();
             if(messageCode != 200) {
-                ErrorClass.showError(context, 15);
+                ErrorClass.showError(activity, 15);
             }
         }
         catch(Exception e) {
-            System.out.print("post faceIDList to server exception!");
             e.printStackTrace();
-            ErrorClass.showError(context, 14);
+            ErrorClass.showError(activity, 14);
         }
     }
 
@@ -358,7 +364,7 @@ class TrainThread extends Thread{
         }
         catch(Exception e){
             e.printStackTrace();
-            ErrorClass.showError(context, 13);
+            ErrorClass.showError(activity, 13);
         }
 
         return null;
@@ -383,11 +389,12 @@ class TrainThread extends Thread{
         }
         catch(Exception e) {
             e.printStackTrace();
-            ErrorClass.showError(context, 12);
+            ErrorClass.showError(activity, 12);
         }
 
         return result;
 
     }
+
 }
 

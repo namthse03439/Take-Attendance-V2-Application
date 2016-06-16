@@ -6,6 +6,7 @@ package com.example.intern.takeattendanceapplicationv2;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 
 public class Preferences {
     public static ProgressDialog loading;
@@ -13,11 +14,17 @@ public class Preferences {
 
     public static int requestCode = 0;
 
-    public static void showLoading(Activity context, String title, String message){
+    public static void showLoading(final Activity activity, final String title, final String message){
         try {
             if (!isShownLoading) {
-                loading = ProgressDialog.show(context, title, message, false, false);
-                isShownLoading = true;
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        loading = ProgressDialog.show(activity, title, message, false, false);
+                        isShownLoading = true;
+                    }
+                });
+
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -26,6 +33,7 @@ public class Preferences {
     public static void dismissLoading(){
         try {
             if (isShownLoading) {
+
                 loading.dismiss();
                 isShownLoading = false;
             }
@@ -33,4 +41,5 @@ public class Preferences {
             e.printStackTrace();
         }
     }
+
 }
