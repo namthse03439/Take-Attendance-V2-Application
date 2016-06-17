@@ -359,7 +359,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
                     double rssi = beacon.getRssi();
                     double distance = calculateDistance(txPower, rssi);
 
-                    if (distance <= 3.0) {
+                    if (distance <= 5.0) {
                         if (!remindDiscover) {
                             remindDiscover = true;
                             AlertDialog.Builder builder2 = new AlertDialog.Builder(DetailedInformationActivity.this);
@@ -567,11 +567,8 @@ public class DetailedInformationActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
-            VerifyThread verifyThread = new VerifyThread(mCurrentPhotoPath, this);
+            VerifyThread verifyThread = new VerifyThread(mCurrentPhotoPath, this, beaconManager, region);
             verifyThread.start();
-
-            getSubjectInformation();
-            initDetailedData();
         }
         else
         {
@@ -584,9 +581,13 @@ class VerifyThread extends Thread{
     Thread t;
     String mCurrentPhotoPath = null;
     Activity activity;
-    public VerifyThread(String _mCurrentPhotoPath, Activity _activity) {
+    BeaconManager beaconManager;
+    Region region;
+    public VerifyThread(String _mCurrentPhotoPath, Activity _activity, BeaconManager _beaconManager, Region _region) {
         mCurrentPhotoPath = _mCurrentPhotoPath;
         activity = _activity;
+        beaconManager = _beaconManager;
+        region = _region;
     }
 
     public void run() {
@@ -615,6 +616,8 @@ class VerifyThread extends Thread{
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            beaconManager.stopRanging(region);
+
                             Button captureImage = (Button) activity.findViewById(R.id.btn_captureImage);
                             Button beaconInRange = (Button) activity.findViewById(R.id.btn_beaconInRange);
 
