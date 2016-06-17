@@ -9,54 +9,64 @@
     tools:context="com.example.intern.takeattendanceapplicationv2.Fragment.TrainingFragment">
 
     <RelativeLayout
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:id="@+id/titleLayout"
-        android:layout_margin="5dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Training Instruction"
-            android:textSize="25dp"
-            android:gravity="center"
-            android:layout_centerHorizontal="true"
-            android:textColor="@android:color/background_dark"/>
-    </RelativeLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/instruction_layout"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
         <RelativeLayout
+            android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:id="@+id/titleLayout"
+            android:layout_margin="5dp">
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/instruction"
-                android:text="@string/hello_blank_fragment" />
+                android:text="Training Instruction"
+                android:textSize="25dp"
+                android:gravity="center"
+                android:layout_centerHorizontal="true"
+                android:textColor="@android:color/background_dark"/>
         </RelativeLayout>
+
+        <ScrollView
+            android:id="@+id/layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/titleLayout"
+            android:fillViewport="true"
+            android:scrollbarStyle="insideOverlay"
+            android:orientation="horizontal"
+            android:scrollbars="horizontal|vertical"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp">
+
+            <TableLayout
+                android:id="@+id/tableLayout"
+                android:orientation="vertical"
+                android:layout_margin="1dp"
+                android:layout_weight="95"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            </TableLayout>
+
+        </ScrollView>
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:id="@+id/instruction_layout"
+            android:layout_below="@+id/layout">
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Start Training"
-                android:id="@+id/btn_captureImage"
+                android:id="@+id/btn_training"
                 android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true" />
-
         </RelativeLayout>
 
-
-    </LinearLayout>
+    </RelativeLayout>
 
 </FrameLayout>

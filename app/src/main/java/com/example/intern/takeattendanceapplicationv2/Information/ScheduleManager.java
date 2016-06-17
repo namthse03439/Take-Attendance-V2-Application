@@ -30,9 +30,26 @@ public class ScheduleManager {
         if (schedule != null)
         {
             dailySchedule = schedule;
-            for (int i = 0; i < timeNumber; i++)
-            {
-                isTakeAttendace[i] = false;
+            initAttendanceStatus();
+        }
+    }
+    private void initAttendanceStatus()
+    {
+        for(int subjectIndex = 0; subjectIndex < dailySchedule.length(); subjectIndex++) {
+            JSONObject subject = null;
+            try {
+                subject = dailySchedule.getJSONObject(subjectIndex);
+                final int status = Integer.parseInt(subject.getString("status"));
+                if (status == 0)
+                {
+                    setIsTakeAttendance(subjectIndex, false);
+                }
+                else
+                {
+                    setIsTakeAttendance(subjectIndex, true);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -72,7 +89,29 @@ public class ScheduleManager {
     {
         return dailySchedule;
     }
+    public void updateSchedule(JSONObject serverResult)
+    {
+        try
+        {
+            JSONObject subject = dailySchedule.getJSONObject(currentLessionIndex);
+            subject.put("recorded_at", serverResult.getString("recorded_at"));
+            if (serverResult.getString("is_late").compareTo("true") == 0)
+            {
+                subject.put("status", "2");
+            }
+            else
+            {
+                subject.put("status", "1");
+            }
 
+            dailySchedule.put(currentLessionIndex, subject);
+            setIsTakeAttendance(currentLessionIndex, true);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 
 
 }

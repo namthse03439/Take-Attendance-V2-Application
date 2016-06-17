@@ -76,6 +76,9 @@ public class TakeAttendanceToday extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
+    private static final int MY_CHILD_ACTIVITY = 1;
+    public static final String UPDATE_SCHEDULE_VIEW = "updateSchedule";
+
     public TakeAttendanceToday() {
         // Required empty public constructor
     }
@@ -272,13 +275,34 @@ public class TakeAttendanceToday extends Fragment {
                 public void onClick(View v) {
                     GlobalVariable.scheduleManager.setCurrentLession(index);
                     Intent intend = new Intent(context, DetailedInformationActivity.class);
-                    startActivity(intend);
+                    startActivityForResult(intend, MY_CHILD_ACTIVITY);
+
+
                 }
             });
         }
         catch (Exception e)
         {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode) {
+            case (MY_CHILD_ACTIVITY) : {
+                if (resultCode == Activity.RESULT_OK) {
+                    int result = data.getIntExtra(UPDATE_SCHEDULE_VIEW, 0);
+
+                    if (result == 1)
+                    {
+                        tls[1].removeAllViews();
+                        displayScheduleToday();
+                    }
+                }
+                break;
+            }
         }
     }
 
@@ -328,11 +352,6 @@ public class TakeAttendanceToday extends Fragment {
         setTimeView();
 
         try {
-//            final ProgressDialog progressDialog = new ProgressDialog(getActivity(), R.style.AppTheme);
-//            progressDialog.setIndeterminate(true);
-//            progressDialog.setMessage("Loading data from server...");
-//            progressDialog.show();
-
             Preferences.showLoading(context, "Setup", "Loading data from server...");
 
             SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
