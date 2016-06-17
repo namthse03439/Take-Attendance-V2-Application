@@ -15,7 +15,10 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -25,12 +28,14 @@ import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
+import com.estimote.sdk.repackaged.gson_v2_3_1.com.google.gson.internal.Excluder;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ErrorClass;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.Notification;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.TakeAttendanceClass;
+import com.example.intern.takeattendanceapplicationv2.Fragment.TakeAttendanceToday;
 import com.example.intern.takeattendanceapplicationv2.Fragment.TrainingFragment;
 import com.facepp.http.HttpRequests;
 import com.facepp.http.PostParameters;
@@ -66,6 +71,11 @@ public class DetailedInformationActivity extends AppCompatActivity {
     boolean isTakeAttendance;
     JSONObject subject;
 
+    Animation animation = null;
+
+    boolean inStage;
+    boolean outStage;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,8 +83,9 @@ public class DetailedInformationActivity extends AppCompatActivity {
 
         beaconManager = new BeaconManager(this);
 
-        isTakeAttendance = GlobalVariable.scheduleManager.isTakeAttendance(currentIndex);
         currentIndex = GlobalVariable.scheduleManager.currentLessionIndex;
+        isTakeAttendance = GlobalVariable.scheduleManager.isTakeAttendance(currentIndex);
+        inStage = isTakeAttendance;
         JSONArray schedule = GlobalVariable.scheduleManager.getDailySchedule();
         try
         {
@@ -92,32 +103,70 @@ public class DetailedInformationActivity extends AppCompatActivity {
             ErrorClass.showError(this, 26);
         }
 
+        getSubjectInformation();
         initDetailedData();
 
-        if (!isTakeAttendance)
-        {
-            initBeaconEvent();
-        }
-
         mBeaconInRangeBtn = (Button) findViewById(R.id.btn_beaconInRange);
+        mBeaconInRangeBtn.setWidth(120);
+        mBeaconInRangeBtn.setLines(2);
+
         mCaptureImageBtn = (Button) findViewById(R.id.btn_captureImage);
+        mCaptureImageBtn.setWidth(120);
+        mCaptureImageBtn.setLines(2);
+
         if (isTakeAttendance)
         {
             mBeaconInRangeBtn.setVisibility(Button.INVISIBLE);
-
+            mCaptureImageBtn.setVisibility(Button.INVISIBLE);
         }
         else
         {
+            initBeaconEvent();
+            initBlinkingButton();
+
+            mBeaconInRangeBtn.startAnimation(animation);
+            mBeaconInRangeBtn.setVisibility(Button.VISIBLE);
             mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#cc0000"));
             mBeaconInRangeBtn.setTextColor(Color.WHITE);
+            addListenerToBeaconInRangerBtn();
+
+            mCaptureImageBtn.setVisibility(Button.INVISIBLE);
+            mCaptureImageBtn.setBackgroundColor(Color.parseColor("#008000"));
+            mCaptureImageBtn.setTextColor(Color.WHITE);
+            mCaptureImageBtn.setVisibility(Button.INVISIBLE);
+            addListenerToCaptureImageBtn();
         }
+    }
 
-        mCaptureImageBtn.setBackgroundColor(Color.parseColor("#008000"));
-        mCaptureImageBtn.setTextColor(Color.WHITE);
-        mCaptureImageBtn.setVisibility(Button.INVISIBLE);
+    protected void getSubjectInformation()
+    {
+        currentIndex = GlobalVariable.scheduleManager.currentLessionIndex;
+        isTakeAttendance = GlobalVariable.scheduleManager.isTakeAttendance(currentIndex);
+        JSONArray schedule = GlobalVariable.scheduleManager.getDailySchedule();
+        try
+        {
+            subject = schedule.getJSONObject(currentIndex);
 
-        addListenerToBeaconInRangerBtn();
-        addListenerToCaptureImageBtn();
+            String UUIDs = subject.getString("uuid");
+            int major = Integer.parseInt(subject.getString("major"));
+            int minor = Integer.parseInt(subject.getString("minor"));
+
+            region = new Region("ranged region", UUID.fromString(UUIDs), major, minor);
+
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            ErrorClass.showError(this, 26);
+        }
+    }
+
+    private void initBlinkingButton()
+    {
+        animation = new AlphaAnimation(1, 0); // Change alpha from fully visible to invisible
+        animation.setDuration(500); // duration - half a second
+        animation.setInterpolator(new LinearInterpolator()); // do not alter animation rate
+        animation.setRepeatCount(Animation.INFINITE); // Repeat animation infinitely
+        animation.setRepeatMode(Animation.REVERSE); // Reverse animation at the end so the button will fade back in
     }
 
     private void addListenerToBeaconInRangerBtn()
@@ -169,6 +218,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
         mCaptureImageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                v.clearAnimation();
                 if (remindDiscover)
                 {
                     dispatchTakePictureIntent();
@@ -196,7 +246,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
         return result;
     }
 
-    private void initDetailedData()
+    public void initDetailedData()
     {
         try
         {
@@ -235,33 +285,34 @@ public class DetailedInformationActivity extends AppCompatActivity {
                         break;
 
                     case 5:
+                        id = R.id.tv6;
+
                         switch (status) {
                             case 0:
                                 tv = (TextView) findViewById(id);
                                 text = "NOT YET";
                                 tv.setText(text);
-                                tv.setTextColor(Color.LTGRAY);
+                                tv.setTextColor(Color.parseColor("#C0C0C0"));
                                 break;
                             case 1:
                                 tv = (TextView) findViewById(id);
                                 text = "PRESENT";
                                 tv.setText(text);
-                                tv.setTextColor(Color.GREEN);
+                                tv.setTextColor(Color.parseColor("#00FF7F"));
                                 break;
                             case 2:
                                 tv = (TextView) findViewById(id);
                                 text = "LATE";
                                 tv.setText(text);
-                                tv.setTextColor(Color.YELLOW);
+                                tv.setTextColor(Color.parseColor("#FFA500"));
                                 break;
                             case 3:
                                 tv = (TextView) findViewById(id);
                                 text = "ABSENT";
                                 tv.setText(text);
-                                tv.setTextColor(Color.RED);
+                                tv.setTextColor(Color.parseColor("#CC0000"));
                                 break;
                         }
-                        id = R.id.tv6;
                         break;
 
                     case 6:
@@ -308,7 +359,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
                     double rssi = beacon.getRssi();
                     double distance = calculateDistance(txPower, rssi);
 
-                    if (distance <= 3.0) {
+                    if (distance <= 5.0) {
                         if (!remindDiscover) {
                             remindDiscover = true;
                             AlertDialog.Builder builder2 = new AlertDialog.Builder(DetailedInformationActivity.this);
@@ -326,12 +377,19 @@ public class DetailedInformationActivity extends AppCompatActivity {
                             AlertDialog alert12 = builder2.create();
                             alert12.show();
 
-                            mCaptureImageBtn.setVisibility(Button.VISIBLE);
+                            mBeaconInRangeBtn.clearAnimation();
                             mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#008000"));
+
+                            mCaptureImageBtn.setVisibility(Button.VISIBLE);
+                            mCaptureImageBtn.startAnimation(animation);
                         }
                     } else {
-                        mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#cc0000"));
                         remindDiscover = false;
+
+                        mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#cc0000"));
+                        mBeaconInRangeBtn.startAnimation(animation);
+
+                        mCaptureImageBtn.clearAnimation();
                         mCaptureImageBtn.setVisibility(Button.INVISIBLE);
                     }
                 }
@@ -489,25 +547,47 @@ public class DetailedInformationActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        Intent resultIntent = new Intent();
+        setResult(Activity.RESULT_OK, resultIntent);
+
+        outStage = GlobalVariable.scheduleManager.isTakeAttendance(currentIndex);
+        if (inStage != outStage)
+        {
+            resultIntent.putExtra(TakeAttendanceToday.UPDATE_SCHEDULE_VIEW, 1);
+        }
+        else
+        {
+            resultIntent.putExtra(TakeAttendanceToday.UPDATE_SCHEDULE_VIEW, 0);
+        }
+
+        this.finish();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
-
-            VerifyThread verifyThread = new VerifyThread(mCurrentPhotoPath, this);
+            VerifyThread verifyThread = new VerifyThread(mCurrentPhotoPath, this, beaconManager, region);
             verifyThread.start();
-
+        }
+        else
+        {
+            mCaptureImageBtn.startAnimation(animation);
         }
     }
 }
-
-
 
 class VerifyThread extends Thread{
     Thread t;
     String mCurrentPhotoPath = null;
     Activity activity;
-    public VerifyThread(String _mCurrentPhotoPath, Activity _activity){
+    BeaconManager beaconManager;
+    Region region;
+    public VerifyThread(String _mCurrentPhotoPath, Activity _activity, BeaconManager _beaconManager, Region _region) {
         mCurrentPhotoPath = _mCurrentPhotoPath;
         activity = _activity;
+        beaconManager = _beaconManager;
+        region = _region;
     }
 
     public void run() {
@@ -526,7 +606,58 @@ class VerifyThread extends Thread{
             String faceID = GlobalVariable.get1FaceID(activity, httpRequests, imgFile);
             double result = getVerification(httpRequests, personID, faceID);
 
-            JSONObject serverResult = sendResultToLocalServer(result); //TODO: a Nam lam gi thi lam
+            final JSONObject serverResult = sendResultToLocalServer(result);
+            try
+            {
+                String record_at = serverResult.getString("recorded_at");
+                if (!record_at.isEmpty())
+                {
+                    GlobalVariable.scheduleManager.updateSchedule(serverResult);
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            beaconManager.stopRanging(region);
+
+                            Button captureImage = (Button) activity.findViewById(R.id.btn_captureImage);
+                            Button beaconInRange = (Button) activity.findViewById(R.id.btn_beaconInRange);
+
+                            captureImage.clearAnimation();
+                            beaconInRange.clearAnimation();
+
+                            captureImage.setVisibility(Button.INVISIBLE);
+                            beaconInRange.setVisibility(Button.INVISIBLE);
+
+                            TextView status = (TextView) activity.findViewById(R.id.tv6);
+                            TextView record_at = (TextView) activity.findViewById(R.id.tv7);
+                            try
+                            {
+                                String result = serverResult.getString("is_late");
+                                if (result.compareTo("true") == 0)
+                                {
+                                    status.setText("LATE");
+                                    status.setTextColor(Color.parseColor("#FFA500"));
+                                }
+                                else
+                                {
+                                    status.setText("PRESENT");
+                                    status.setTextColor(Color.parseColor("#00FF7F"));
+                                }
+
+                                record_at.setText(serverResult.getString("recorded_at"));
+                            }
+                            catch (Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+
         }
         else{
             Notification.showMessage(activity, 3);
@@ -566,7 +697,7 @@ class VerifyThread extends Thread{
                 return null;
             }
         }
-        catch(Exception e){
+        catch(Exception e) {
             e.printStackTrace();
             ErrorClass.showError(activity, 19);
         }

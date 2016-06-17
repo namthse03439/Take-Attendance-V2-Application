@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,9 +16,14 @@ import android.app.Fragment;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
 
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ErrorClass;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
@@ -69,6 +75,14 @@ public class TrainingFragment extends Fragment {
     private int count = 0;
     Activity context;
 
+    private View myView;
+
+    private TableLayout tl = null;
+
+    private Button mTrainingBtn = null;
+
+    private static final int numOfInstruction = 5;
+
     private OnFragmentInteractionListener mListener;
 
     public TrainingFragment() {
@@ -101,14 +115,57 @@ public class TrainingFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         context = this.getActivity();
-        dispatchTakePictureIntent();
+    }
+
+    private void createInstructionView()
+    {
+        tl = (TableLayout) myView.findViewById(R.id.tableLayout);
+        for(int i = 0; i < numOfInstruction; i++)
+        {
+            TextView tv = new TextView(context);
+            TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, Gravity.CENTER);
+            params.height = 140;
+            tv.setLayoutParams(params);
+
+            tv.setText(R.string.instruction_1);
+            tv.setTextSize(16);
+
+            if (i % 2 == 1)
+            {
+                tv.setBackgroundColor(Color.parseColor("#bbdefb"));
+            }
+            else
+            {
+                tv.setBackgroundColor(Color.WHITE);
+            }
+
+            TableRow trs = new TableRow(context);
+            TableLayout.LayoutParams layoutRow = new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT);
+            trs.setLayoutParams(layoutRow);
+
+            trs.addView(tv);
+
+            tl.addView(trs);
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_training, container, false);
+        myView = inflater.inflate(R.layout.fragment_training, container, false);
+
+        createInstructionView();
+
+        mTrainingBtn = (Button) myView.findViewById(R.id.btn_training);
+        mTrainingBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dispatchTakePictureIntent();
+            }
+        });
+
+        return myView;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -167,7 +224,6 @@ public class TrainingFragment extends Fragment {
                 ".jpeg",         /* suffix */
                 storageDir      /* directory */
         );
-//        System.out.println("check");
 
         // Save a file: path for use with ACTION_VIEW intents
         mCurrentPhotoPath = image.getAbsolutePath();
@@ -191,6 +247,7 @@ public class TrainingFragment extends Fragment {
             if (photoFile != null) {
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                         Uri.fromFile(photoFile));
+                takePictureIntent.putExtra("android.intent.extras.CAMERA_FACING", android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
         }
@@ -199,30 +256,14 @@ public class TrainingFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == context.RESULT_OK) {
-            final ProgressDialog progressDialog = new ProgressDialog(context, R.style.AppTheme);
-            progressDialog.setIndeterminate(true);
-            progressDialog.setMessage("Image is sending to server...");
-            progressDialog.show();
-
             // =============================
 
             trainingFunction();
 
             // -----------------------------
-
-            new android.os.Handler().postDelayed(
-                    new Runnable() {
-                        public void run() {
-                            // On complete call either onLoginSuccess or onLoginFailed
-                            //onLoginSuccess();
-                            // onLoginFailed();
-                            progressDialog.dismiss();
-                        }
-                    }, 3000);
         }
 
     }
-
 
     void trainingFunction() {
         Activity activity = this.getActivity();
@@ -231,9 +272,7 @@ public class TrainingFragment extends Fragment {
         TrainThread trainThread = new TrainThread(mCurrentPhotoPath, context);
         trainThread.start();
     }
-
 }
-
 
 class TrainThread extends Thread{
     Thread t;
