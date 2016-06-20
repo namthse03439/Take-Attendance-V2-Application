@@ -1,5 +1,6 @@
 package com.example.intern.takeattendanceapplicationv2;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ErrorClass;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.LoginClass;
+import com.example.intern.takeattendanceapplicationv2.BaseClass.Notification;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
 import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
 
@@ -128,7 +130,7 @@ public class LogInActivity extends AppCompatActivity {
 
         //=======================================
 
-        loginAction(username, password);
+        loginAction(username, password, this);
 
         //---------------------------------------
 
@@ -191,10 +193,10 @@ public class LogInActivity extends AppCompatActivity {
         return valid;
     }
 
-    public void loginAction(String username, String password) {
+    public void loginAction(String username, String password, final Activity activity) {
         StringClient client = ServiceGenerator.createService(StringClient.class);
 
-        LoginClass up = new LoginClass(username, password);
+        LoginClass up = new LoginClass(username, password, this);
 
         Call<ResponseBody> call = client.login(up);
 
@@ -210,7 +212,13 @@ public class LogInActivity extends AppCompatActivity {
                         GlobalVariable.setAuCodeInSP(LogInActivity.this, authorizationCode);
                         Intent intent = new Intent(LogInActivity.this, MainActivity.class);
                         startActivity(intent);
-                    } else {
+                    }
+                    else if(messageCode == 400) {
+                        JSONObject data = new JSONObject(response.errorBody().string());
+                        int errorCode = data.getInt("code");
+                        Notification.showLoginNoti(activity, errorCode);
+                    }
+                    else{
                         ErrorClass.showError(LogInActivity.this, 1);
                     }
                 } catch (Exception e) {
