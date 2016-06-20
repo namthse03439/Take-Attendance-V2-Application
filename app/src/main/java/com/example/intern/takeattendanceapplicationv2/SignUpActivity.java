@@ -85,7 +85,7 @@ public class SignUpActivity extends AppCompatActivity {
         // Interact with local server
         //==========================
 
-        SignupClass user = new SignupClass(username, password, email, studentId);
+        SignupClass user = new SignupClass(username, password, email, studentId, this);
         signupAction(user);
 
         //--------------------------

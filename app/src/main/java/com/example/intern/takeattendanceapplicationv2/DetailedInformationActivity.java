@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -39,6 +40,7 @@ import com.example.intern.takeattendanceapplicationv2.Fragment.TakeAttendanceTod
 import com.example.intern.takeattendanceapplicationv2.Fragment.TrainingFragment;
 import com.facepp.http.HttpRequests;
 import com.facepp.http.PostParameters;
+import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -114,28 +116,41 @@ public class DetailedInformationActivity extends AppCompatActivity {
         mCaptureImageBtn.setWidth(120);
         mCaptureImageBtn.setLines(2);
 
-        if (isTakeAttendance)
-        {
-            mBeaconInRangeBtn.setVisibility(Button.INVISIBLE);
-            mCaptureImageBtn.setVisibility(Button.INVISIBLE);
-        }
-        else
-        {
-            initBeaconEvent();
-            initBlinkingButton();
 
-            mBeaconInRangeBtn.startAnimation(animation);
-            mBeaconInRangeBtn.setVisibility(Button.VISIBLE);
-            mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#cc0000"));
-            mBeaconInRangeBtn.setTextColor(Color.WHITE);
-            addListenerToBeaconInRangerBtn();
+        //TODO
+        SharedPreferences pref = this.getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
 
-            mCaptureImageBtn.setVisibility(Button.INVISIBLE);
-            mCaptureImageBtn.setBackgroundColor(Color.parseColor("#008000"));
-            mCaptureImageBtn.setTextColor(Color.WHITE);
-            mCaptureImageBtn.setVisibility(Button.INVISIBLE);
-            addListenerToCaptureImageBtn();
-        }
+        new CheckIfShowTakeButton().execute(auCode);
+
+//        if(isTakeAttendance)
+//            setButtonsInvisible();
+//        else{
+//            new CheckIfShowTakeButton().execute(auCode);
+//        }
+
+    }
+
+    void setButtonsInvisible() {
+        mBeaconInRangeBtn.setVisibility(Button.INVISIBLE);
+        mCaptureImageBtn.setVisibility(Button.INVISIBLE);
+    }
+
+    void setButtonsVisible() {
+        initBeaconEvent();
+        initBlinkingButton();
+
+        mBeaconInRangeBtn.startAnimation(animation);
+        mBeaconInRangeBtn.setVisibility(Button.VISIBLE);
+        mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#cc0000"));
+        mBeaconInRangeBtn.setTextColor(Color.WHITE);
+        addListenerToBeaconInRangerBtn();
+
+        mCaptureImageBtn.setVisibility(Button.INVISIBLE);
+        mCaptureImageBtn.setBackgroundColor(Color.parseColor("#008000"));
+        mCaptureImageBtn.setTextColor(Color.WHITE);
+        mCaptureImageBtn.setVisibility(Button.INVISIBLE);
+        addListenerToCaptureImageBtn();
     }
 
     protected void getSubjectInformation()
@@ -575,6 +590,41 @@ public class DetailedInformationActivity extends AppCompatActivity {
             mCaptureImageBtn.startAnimation(animation);
         }
     }
+
+    private class CheckIfShowTakeButton extends AsyncTask<String, Void, Boolean> {
+        protected Boolean doInBackground(String... auCode) {
+            String result = "false";
+            StringClient client = ServiceGenerator.createService(StringClient.class, auCode[0]);
+
+            JSONArray schedule = GlobalVariable.scheduleManager.getDailySchedule();
+            try {
+                int timetableID = ((JSONObject) schedule.get(currentIndex)).getInt("timetable_id");
+                JsonObject toUp = new JsonObject();
+                toUp.addProperty("timetable_id", timetableID);
+                Call<ResponseBody> call = client.atAttendanceTime(toUp);
+                Response<ResponseBody> response = call.execute();
+
+                int mesCode = response.code();
+                if(mesCode != 200) throw new Exception();
+                String body = response.body().string();
+                JSONObject data = new JSONObject(body);
+                result = data.getString("result");
+
+            }
+            catch (Exception e){
+                ErrorClass.showError(DetailedInformationActivity.this, 33);
+            }
+
+            return (result.compareTo("true") == 0);
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if(result){
+                setButtonsVisible();
+            }
+        }
+    }
 }
 
 class VerifyThread extends Thread{
@@ -604,60 +654,51 @@ class VerifyThread extends Thread{
         String personID = GlobalVariable.getThisPersonID(activity, auCode);
         if(personID.compareTo("") != 0){
             String faceID = GlobalVariable.get1FaceID(activity, httpRequests, imgFile);
-            double result = getVerification(httpRequests, personID, faceID);
+            if(faceID != null) {
+                double result = getVerification(httpRequests, personID, faceID);
+                final JSONObject serverResult = sendResultToLocalServer(result);
 
-            final JSONObject serverResult = sendResultToLocalServer(result);
-            try
-            {
-                String record_at = serverResult.getString("recorded_at");
-                if (!record_at.isEmpty())
-                {
-                    GlobalVariable.scheduleManager.updateSchedule(serverResult);
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            beaconManager.stopRanging(region);
+                try {
+                    String record_at = serverResult.getString("recorded_at");
+                    if (!record_at.isEmpty()) {
+                        GlobalVariable.scheduleManager.updateSchedule(serverResult);
+                        activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                beaconManager.stopRanging(region);
 
-                            Button captureImage = (Button) activity.findViewById(R.id.btn_captureImage);
-                            Button beaconInRange = (Button) activity.findViewById(R.id.btn_beaconInRange);
+                                Button captureImage = (Button) activity.findViewById(R.id.btn_captureImage);
+                                Button beaconInRange = (Button) activity.findViewById(R.id.btn_beaconInRange);
 
-                            captureImage.clearAnimation();
-                            beaconInRange.clearAnimation();
+                                captureImage.clearAnimation();
+                                beaconInRange.clearAnimation();
 
-                            captureImage.setVisibility(Button.INVISIBLE);
-                            beaconInRange.setVisibility(Button.INVISIBLE);
+                                captureImage.setVisibility(Button.INVISIBLE);
+                                beaconInRange.setVisibility(Button.INVISIBLE);
 
-                            TextView status = (TextView) activity.findViewById(R.id.tv6);
-                            TextView record_at = (TextView) activity.findViewById(R.id.tv7);
-                            try
-                            {
-                                String result = serverResult.getString("is_late");
-                                if (result.compareTo("true") == 0)
-                                {
-                                    status.setText("LATE");
-                                    status.setTextColor(Color.parseColor("#FFA500"));
+                                TextView status = (TextView) activity.findViewById(R.id.tv6);
+                                TextView record_at = (TextView) activity.findViewById(R.id.tv7);
+                                try {
+                                    String result = serverResult.getString("is_late");
+                                    if (result.compareTo("true") == 0) {
+                                        status.setText("LATE");
+                                        status.setTextColor(Color.parseColor("#FFA500"));
+                                    } else {
+                                        status.setText("PRESENT");
+                                        status.setTextColor(Color.parseColor("#00FF7F"));
+                                    }
+
+                                    record_at.setText(serverResult.getString("recorded_at"));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
-                                else
-                                {
-                                    status.setText("PRESENT");
-                                    status.setTextColor(Color.parseColor("#00FF7F"));
-                                }
-
-                                record_at.setText(serverResult.getString("recorded_at"));
                             }
-                            catch (Exception e)
-                            {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+                        });
+                    }
+                } catch (Exception e) {
+                    ErrorClass.showError(activity, 31);
                 }
             }
-            catch (Exception e)
-            {
-
-            }
-
         }
         else{
             Notification.showMessage(activity, 3);

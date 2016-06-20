@@ -27,6 +27,15 @@ public class Notification {
 
     };
 
+    public static String [] LoginNoti = {
+            "0: CODE_INCORRECT_USERNAME",
+            "1: CODE_INCORRECT_PASSWORD",
+            "2: CODE_INCORRECT_DEVICE",
+            "3: CODE_UNVERIFIED_EMAIL",
+            "4: CODE_UNVERIFIED_DEVICE",
+            "5: CODE_UNVERIFIED_EMAIL_DEVICE",
+            "6: CODE_INVALID_ACCOUNT"
+    };
     public static void showMessage(final Activity activity, final int mesCode) {
 
         activity.runOnUiThread(new Runnable() {
@@ -56,6 +65,35 @@ public class Notification {
             }
         });
 
+    }
+
+    public static void showLoginNoti(final Activity activity, final int loginNotiCode){
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(
+                                activity);
+
+                        builder.setMessage(LoginNoti[loginNotiCode]);
+                        builder.setCancelable(false);
+                        builder.setPositiveButton("OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+
+                        AlertDialog alert = builder.create();
+                        alert.show();
+                    }
+                });
+
+            }
+        });
     }
 
 }

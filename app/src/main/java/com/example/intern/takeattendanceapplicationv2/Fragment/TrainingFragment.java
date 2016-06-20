@@ -297,24 +297,26 @@ class TrainThread extends Thread{
         String auCode = pref.getString("authorizationCode", null);
 
         String newFaceID = GlobalVariable.get1FaceID(activity, httpRequests, imgFile);
-        String personID = GlobalVariable.getThisPersonID(activity, auCode);
+        if(newFaceID != null) {
+            String personID = GlobalVariable.getThisPersonID(activity, auCode);
 
-        if(personID.compareTo("") != 0){ //this person has been trained before
+            if (personID.compareTo("") != 0) { //this person has been trained before
 
-            ArrayList faceIDList = getThisFaceIDList(auCode);
-            faceIDList = substitute1FacefromPerson(httpRequests, personID, faceIDList, newFaceID);
-            postFaceIDListtoLocalServer(auCode, faceIDList);
+                ArrayList faceIDList = getThisFaceIDList(auCode);
+                faceIDList = substitute1FacefromPerson(httpRequests, personID, faceIDList, newFaceID);
+                postFaceIDListtoLocalServer(auCode, faceIDList);
+            } else {
+                personID = create1Person(httpRequests, newFaceID);
+                postPersonIDtoLocalServer(auCode, personID);
+                ArrayList<String> faceIDList = new ArrayList<String>();
+                faceIDList.add(newFaceID);
+                postFaceIDListtoLocalServer(auCode, faceIDList);
+            }
+            //Show notification about sucessful training
+            Notification.showMessage(activity, 0);
         }
-        else{
-            personID = create1Person(httpRequests, newFaceID);
-            postPersonIDtoLocalServer(auCode, personID);
-            ArrayList<String> faceIDList = new ArrayList<String>();
-            faceIDList.add(newFaceID);
-            postFaceIDListtoLocalServer(auCode, faceIDList);
-        }
-        //Show notification about sucessful training
         Preferences.dismissLoading();
-        Notification.showMessage(activity, 0);
+
 
     }
 

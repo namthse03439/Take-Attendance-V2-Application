@@ -21,7 +21,7 @@ import butterknife.InjectView;
 public class ErrorClass {
     private static String [] errorList = {
             "Exception caught when loading Full Timetable - GlobalVariale.getFullTimeTable", // 0
-            "Username or Password incorrect - LogInActivity.loginAction", // 1
+            "Fatal error when login - LogInActivity.loginAction", // 1
             "Exception caught when login - LogInActivity.loginAction", // 2
             "Failed when call for response - LogInActivity.loginAction", // 3
             "Error occurred while creating the File - Training Fragment.dispatchTakePictureIntent ", // 4
@@ -50,7 +50,10 @@ public class ErrorClass {
             "Error occurs when sign up - SignUpActivity.signupAction", // 27
             "Connection error when sign up - SignUpActivity.signupAction", // 28
             "findViewById exception- DetailedInformationActivity.initDetailedData", // 29
-            "Cannot detect any face from this photo - GlobalVariable.get1FaceID"
+            "Cannot detect any face from this photo - GlobalVariable.get1FaceID", // 30
+            "Error 31, DetailedInformationActivity.VerifyThread.run", // 31
+            "Error 32, Cannot detect any face in the photo", // 32
+            "Error 33, Cannot check if now is valid time for checking attendance - DetailedInformationActivity.checkIfItsTime", // 33
 
     };
 

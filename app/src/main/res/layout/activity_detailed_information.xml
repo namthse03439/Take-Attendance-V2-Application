@@ -296,7 +296,8 @@
             android:layout_alignParentStart="true"
             android:layout_weight="1"
             android:layout_marginRight="20dp"
-            android:id="@+id/btn_beaconInRange" />
+            android:id="@+id/btn_beaconInRange"
+            android:visibility="invisible" />
 
         <Button
             style="?android:attr/buttonStyleSmall"
@@ -307,7 +308,8 @@
             android:layout_alignParentEnd="true"
             android:layout_weight="1"
             android:layout_marginLeft="20dp"
-            android:id="@+id/btn_captureImage" />
+            android:id="@+id/btn_captureImage"
+            android:visibility="invisible" />
 
     </LinearLayout>
 

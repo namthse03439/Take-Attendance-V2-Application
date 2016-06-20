@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 
 import com.example.intern.takeattendanceapplicationv2.Information.ScheduleManager;
 import com.example.intern.takeattendanceapplicationv2.LogInActivity;
@@ -186,7 +188,7 @@ public class GlobalVariable {
         return personID;
     }
 
-    public static String get1FaceID(Activity activity, HttpRequests httpRequests, File imgFile){
+    public static String get1FaceID(Activity activity, HttpRequests httpRequests, File imgFile) {
         String faceID = null;
         try {
             PostParameters postParameters = new PostParameters().setImg(imgFile).setMode("oneface");
@@ -201,4 +203,5 @@ public class GlobalVariable {
             ErrorClass.showError(activity, 30);
         return faceID;
     }
+
 }

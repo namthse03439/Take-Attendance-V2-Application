@@ -1,5 +1,7 @@
 package com.example.intern.takeattendanceapplicationv2.BaseClass;
 
+import com.google.gson.JsonObject;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -53,7 +55,7 @@ public interface StringClient {
     Call<ResponseBody> postPersonID(@Body String person_id);
 
     @POST("timetable/check-attendance")
-    Call<ResponseBody> atAttendanceTime(@Body JSONObject isOntime);
+    Call<ResponseBody> atAttendanceTime(@Body JsonObject isOntime);
 
     @POST("timetable/take-attendance")
     Call<ResponseBody> takeAttendance(@Body TakeAttendanceClass toUp);
