@@ -5,7 +5,7 @@ android {
     buildToolsVersion "23.0.3"
 
     defaultConfig {
-        applicationId "com.example.intern.takeattendanceapplicationv2"
+        applicationId "com.example.intern.takeattendanceapplicationv2t"
         minSdkVersion 18
         targetSdkVersion 23
         versionCode 1

@@ -6,7 +6,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.intern.takeattendanceapplicationv2.Fragment.AttendanceReportByTimeFragment">
+    tools:context="com.example.intern.takeattendanceapplicationv2t.Fragment.AttendanceReportByTimeFragment">
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"

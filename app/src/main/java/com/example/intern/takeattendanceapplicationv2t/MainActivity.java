@@ -1,10 +1,8 @@
-package com.example.intern.takeattendanceapplicationv2;
+package com.example.intern.takeattendanceapplicationv2t;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
 
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
@@ -19,23 +17,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 
-import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
-import com.example.intern.takeattendanceapplicationv2.Fragment.AttendanceReportByTimeFragment;
-import com.example.intern.takeattendanceapplicationv2.Fragment.TakeAttendanceToday;
-import com.example.intern.takeattendanceapplicationv2.Fragment.TrainingFragment;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.GlobalVariable;
+import com.example.intern.takeattendanceapplicationv2t.Fragment.AttendanceReportByTimeFragment;
+import com.example.intern.takeattendanceapplicationv2t.Fragment.TakeAttendanceToday;
+import com.example.intern.takeattendanceapplicationv2t.Fragment.TrainingFragment;
 
 
-import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
-import com.example.intern.takeattendanceapplicationv2.Information.ScheduleManager;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import com.example.intern.takeattendanceapplicationv2t.Information.ScheduleManager;
 
 
 public class MainActivity extends AppCompatActivity

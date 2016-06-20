@@ -1,9 +1,6 @@
-package com.example.intern.takeattendanceapplicationv2.BaseClass;
+package com.example.intern.takeattendanceapplicationv2t.BaseClass;
 
 import com.google.gson.JsonObject;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 

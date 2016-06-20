@@ -1,19 +1,8 @@
-package com.example.intern.takeattendanceapplicationv2.BaseClass;
+package com.example.intern.takeattendanceapplicationv2t.BaseClass;
 
 import android.app.Activity;
-import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.support.v7.app.AlertDialog;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.example.intern.takeattendanceapplicationv2.R;
-
-import butterknife.InjectView;
 
 /**
  * Created by Lord One on 6/14/2016.
@@ -31,7 +20,7 @@ public class ErrorClass {
             "Exception caught when convert to JSONObject from response.body - GlobalVariable.loadTimetableByWeek", // 8
             "Error while call for response - GlobalVariable.loadTimetableByWeek", // 9
             "Exception caught while get response from local server - GlobalVariable.getThisPersonID", // 10
-            "Exception caught while get response from local server - GlobalVariable.getThisPersonID", // 11
+            "No face detected from image - GlobalVariable.get1FaceID", // 11
             "Exception caught while request face ID List from local server - TrainingFragment.getThisFaceIDList", // 12
             "Exception caught while modify the face ID List - TrainingFragment.substitute1FacefromPerson", //13
             "Exception caught while send face ID List to local server - TrainingFragment.postFaceIDListtoLocalServer", // 14

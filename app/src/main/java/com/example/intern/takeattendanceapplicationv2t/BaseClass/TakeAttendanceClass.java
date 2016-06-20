@@ -1,4 +1,4 @@
-package com.example.intern.takeattendanceapplicationv2.BaseClass;
+package com.example.intern.takeattendanceapplicationv2t.BaseClass;
 
 /**
  * Created by Lord One on 6/13/2016.

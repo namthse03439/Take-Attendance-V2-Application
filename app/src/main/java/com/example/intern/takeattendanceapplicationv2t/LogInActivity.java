@@ -1,7 +1,6 @@
-package com.example.intern.takeattendanceapplicationv2;
+package com.example.intern.takeattendanceapplicationv2t;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,12 +18,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.intern.takeattendanceapplicationv2.BaseClass.ErrorClass;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.LoginClass;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.Notification;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.ErrorClass;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.GlobalVariable;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.LoginClass;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.Notification;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.ServiceGenerator;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.StringClient;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

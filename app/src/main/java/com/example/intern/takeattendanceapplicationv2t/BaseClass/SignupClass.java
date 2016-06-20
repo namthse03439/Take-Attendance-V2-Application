@@ -1,19 +1,26 @@
-package com.example.intern.takeattendanceapplicationv2.BaseClass;
+package com.example.intern.takeattendanceapplicationv2t.BaseClass;
 
 import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 
 /**
- * Created by Tung on 5/31/2016.
+ * Created by Tung on 5/30/2016.
  */
-public class LoginClass {
+public class SignupClass {
     String username = "NULL";
     String password = "NULL";
+    String email = "NULL";
+    String SID = "NULL";
     String device_hash = "NULL";
-    public LoginClass(String _username, String _password, Context context){
+
+    public SignupClass() {}
+
+    public SignupClass(String _username, String _password, String _email, String _SID, Context context){
         username = _username;
         password = _password;
+        email = _email;
+        SID = _SID;
         device_hash = getMac(context);
     }
 
@@ -23,5 +30,5 @@ public class LoginClass {
         String address = info.getMacAddress();
         return address;
     }
-}
 
+}
