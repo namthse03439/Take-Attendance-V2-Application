@@ -38,11 +38,13 @@ import retrofit2.Response;
 public class LogInActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
     private static final int REQUEST_SIGNUP = 0;
+    private static final int REQUEST_REGISTER_DEVICE = 1;
 
     @InjectView(R.id.input_username) EditText _usernameText;
     @InjectView(R.id.input_password) EditText _passwordText;
     @InjectView(R.id.btn_login)      Button   _loginButton;
     @InjectView(R.id.link_signup)    TextView _signupLink;
+    @InjectView(R.id.link_updateMacAddress)    TextView _registerDeviceLink;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -83,6 +85,16 @@ public class LogInActivity extends AppCompatActivity {
                 // Start the Signup activity
                 Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
                 startActivityForResult(intent, REQUEST_SIGNUP);
+            }
+        });
+
+        _registerDeviceLink.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // Start the RegisterNewDeviceActivity activity
+                Intent intent = new Intent(getApplicationContext(), RegisterNewDeviceActivity.class);
+                startActivityForResult(intent, REQUEST_REGISTER_DEVICE);
             }
         });
 

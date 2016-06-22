@@ -27,4 +27,6 @@
     Present status: between 15 minutes before to 15 minutes after start time. (E.g. Start time is 8.00 AM, so you need to present from 7.45 - 8.15 AM\n
     Late status   : late more than 15 minutes after start time to the end time of the subject. </string>
 
+    <string name="action_registerDevice"> I agree to register this device for my account. </string>
+
 </resources>
