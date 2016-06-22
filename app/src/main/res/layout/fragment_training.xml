@@ -21,11 +21,27 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Training Instruction"
+                android:text="Color and Time Instruction"
                 android:textSize="25dp"
                 android:gravity="center"
                 android:layout_centerHorizontal="true"
                 android:textColor="@android:color/background_dark"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/instruction_layout"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Start Face Training"
+                android:id="@+id/btn_training" />
         </RelativeLayout>
 
         <ScrollView
@@ -33,39 +49,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/titleLayout"
+            android:layout_above="@+id/instruction_layout"
             android:fillViewport="true"
             android:scrollbarStyle="insideOverlay"
             android:orientation="horizontal"
             android:scrollbars="horizontal|vertical"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="10dp">
 
             <TableLayout
                 android:id="@+id/tableLayout"
                 android:orientation="vertical"
                 android:layout_margin="1dp"
-                android:layout_weight="95"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
             </TableLayout>
 
         </ScrollView>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/instruction_layout"
-            android:layout_below="@+id/layout">
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Start Training"
-                android:id="@+id/btn_training"
-                android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true" />
-        </RelativeLayout>
 
     </RelativeLayout>
 

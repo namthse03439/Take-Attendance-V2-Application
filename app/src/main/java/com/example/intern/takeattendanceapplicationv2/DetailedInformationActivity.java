@@ -116,18 +116,14 @@ public class DetailedInformationActivity extends AppCompatActivity {
         mCaptureImageBtn.setWidth(120);
         mCaptureImageBtn.setLines(2);
 
-
-        //TODO
         SharedPreferences pref = this.getSharedPreferences("ATK_pref", 0);
         String auCode = pref.getString("authorizationCode", null);
 
-        new CheckIfShowTakeButton().execute(auCode);
-
-//        if(isTakeAttendance)
-//            setButtonsInvisible();
-//        else{
-//            new CheckIfShowTakeButton().execute(auCode);
-//        }
+        if(isTakeAttendance)
+            setButtonsInvisible();
+        else{
+            new CheckIfShowTakeButton().execute(auCode);
+        }
 
     }
 

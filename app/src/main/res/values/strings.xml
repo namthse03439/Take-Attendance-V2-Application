@@ -19,10 +19,12 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_fragment_take_attendance">Schedule Today</string>
 
-    <string name="instruction_1"> Instruction 1 </string>
-    <string name="instruction_2"> Instruction 2 </string>
-    <string name="instruction_3"> Instruction 3 </string>
-    <string name="instruction_4"> Instruction 4 </string>
-    <string name="instruction_5"> Instruction 5 </string>
+    <string name="instruction_1"> This subject will be available to take attendance later. </string>
+    <string name="instruction_2"> You present at class in time of this subject. </string>
+    <string name="instruction_3"> You present at class late more than 15 minutes from the start time of this subject.  </string>
+    <string name="instruction_4"> You absent at class this subject. </string>
+    <string name="instruction_5"> TIME INSTRUCTION:\n  A subject will be availabel to take attendance between 15 minutes before start time to the end time of it.\n
+    Present status: between 15 minutes before to 15 minutes after start time. (E.g. Start time is 8.00 AM, so you need to present from 7.45 - 8.15 AM\n
+    Late status   : late more than 15 minutes after start time to the end time of the subject. </string>
 
 </resources>

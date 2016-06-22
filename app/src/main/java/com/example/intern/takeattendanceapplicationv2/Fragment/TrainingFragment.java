@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -81,7 +82,7 @@ public class TrainingFragment extends Fragment {
 
     private Button mTrainingBtn = null;
 
-    private static final int numOfInstruction = 5;
+    private static final int numOfInstruction = 4;
 
     private OnFragmentInteractionListener mListener;
 
@@ -123,20 +124,56 @@ public class TrainingFragment extends Fragment {
         for(int i = 0; i < numOfInstruction; i++)
         {
             TextView tv = new TextView(context);
-            TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, Gravity.CENTER);
-            params.height = 140;
-            tv.setLayoutParams(params);
 
-            tv.setText(R.string.instruction_1);
-            tv.setTextSize(16);
-
-            if (i % 2 == 1)
+            if (i < 4)
             {
-                tv.setBackgroundColor(Color.parseColor("#bbdefb"));
+                TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, Gravity.CENTER);
+                params.height = 140;
+                tv.setLayoutParams(params);
+            }
+            else
+            {
+                TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
+                params.setMargins(2, 2, 2, 2);
+                tv.setLayoutParams(params);
+            }
+
+            GradientDrawable gd = new GradientDrawable();
+
+            switch (i) {
+                case 0:
+                    gd.setColor(0xFFC0C0C0);
+                    tv.setText(R.string.instruction_1);
+                    break;
+                case 1:
+                    gd.setColor(0xFF00FF7F);
+                    tv.setText(R.string.instruction_2);
+                    break;
+                case 2:
+                    gd.setColor(0xFFFFA500);
+                    tv.setText(R.string.instruction_3);
+                    break;
+                case 3:
+                    gd.setColor(0xFFCC0000);
+                    tv.setText(R.string.instruction_4);
+                    break;
+                case 4:
+                    tv.setText(R.string.instruction_5);
+            }
+
+            tv.setTextSize(16);
+            if (i < 4)
+            {
+                gd.setCornerRadius(5);
+                gd.setStroke(1, 0xFF000000);
+                tv.setBackgroundDrawable(gd);
+                tv.setTextColor(Color.WHITE);
+                tv.setGravity(Gravity.CENTER);
             }
             else
             {
                 tv.setBackgroundColor(Color.WHITE);
+                tv.setTextColor(Color.RED);
             }
 
             TableRow trs = new TableRow(context);
