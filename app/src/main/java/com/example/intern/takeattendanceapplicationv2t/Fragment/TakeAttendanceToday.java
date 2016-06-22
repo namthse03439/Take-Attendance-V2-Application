@@ -1,19 +1,15 @@
-package com.example.intern.takeattendanceapplicationv2.Fragment;
+package com.example.intern.takeattendanceapplicationv2t.Fragment;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,14 +20,13 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
-import com.example.intern.takeattendanceapplicationv2.DetailedInformationActivity;
-import com.example.intern.takeattendanceapplicationv2.Information.ScheduleManager;
-import com.example.intern.takeattendanceapplicationv2.MainActivity;
-import com.example.intern.takeattendanceapplicationv2.Preferences;
-import com.example.intern.takeattendanceapplicationv2.R;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.GlobalVariable;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.ServiceGenerator;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.StringClient;
+import com.example.intern.takeattendanceapplicationv2t.DetailedInformationActivity;
+import com.example.intern.takeattendanceapplicationv2t.Information.ScheduleManager;
+import com.example.intern.takeattendanceapplicationv2t.Preferences;
+import com.example.intern.takeattendanceapplicationv2t.R;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

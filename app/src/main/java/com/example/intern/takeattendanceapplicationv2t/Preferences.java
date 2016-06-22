@@ -1,4 +1,4 @@
-package com.example.intern.takeattendanceapplicationv2;
+package com.example.intern.takeattendanceapplicationv2t;
 
 /**
  * Created by Sonata on 6/13/2016.
@@ -6,7 +6,6 @@ package com.example.intern.takeattendanceapplicationv2;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 
 public class Preferences {
     public static ProgressDialog loading;

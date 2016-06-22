@@ -1,9 +1,8 @@
-package com.example.intern.takeattendanceapplicationv2.Information;
+package com.example.intern.takeattendanceapplicationv2t.Information;
 
 /**
  * Created by Sonata on 6/3/2016.
  */
-import com.example.intern.takeattendanceapplicationv2.BaseClass.ErrorClass;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

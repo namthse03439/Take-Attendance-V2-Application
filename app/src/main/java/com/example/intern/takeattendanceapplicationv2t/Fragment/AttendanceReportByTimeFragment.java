@@ -1,4 +1,4 @@
-package com.example.intern.takeattendanceapplicationv2.Fragment;
+package com.example.intern.takeattendanceapplicationv2t.Fragment;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
@@ -18,12 +18,8 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
-import com.example.intern.takeattendanceapplicationv2.Information.ScheduleManager;
-import com.example.intern.takeattendanceapplicationv2.R;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.example.intern.takeattendanceapplicationv2t.Information.ScheduleManager;
+import com.example.intern.takeattendanceapplicationv2t.R;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

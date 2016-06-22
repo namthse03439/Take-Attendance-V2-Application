@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.intern.takeattendanceapplicationv2">
+    package="com.example.intern.takeattendanceapplicationv2t">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -30,18 +30,18 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.intern.takeattendanceapplicationv2t.MainActivity"
             android:label="@string/app_name" />
-        <activity android:name=".LogInActivity">
+        <activity android:name="com.example.intern.takeattendanceapplicationv2t.LogInActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SignUpActivity" />
+        <activity android:name="com.example.intern.takeattendanceapplicationv2t.SignUpActivity" />
         <activity android:name=".TakeAttendanceTodayActivity" />
-        <activity android:name=".DetailedInformationActivity"></activity>
+        <activity android:name="com.example.intern.takeattendanceapplicationv2t.DetailedInformationActivity"></activity>
     </application>
 
 </manifest>

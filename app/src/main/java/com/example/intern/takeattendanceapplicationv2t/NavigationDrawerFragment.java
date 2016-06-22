@@ -1,4 +1,4 @@
-package com.example.intern.takeattendanceapplicationv2;
+package com.example.intern.takeattendanceapplicationv2t;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -23,8 +23,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.ServiceGenerator;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.StringClient;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;

@@ -1,17 +1,13 @@
-package com.example.intern.takeattendanceapplicationv2.BaseClass;
+package com.example.intern.takeattendanceapplicationv2t.BaseClass;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 
-import com.example.intern.takeattendanceapplicationv2.Information.ScheduleManager;
-import com.example.intern.takeattendanceapplicationv2.LogInActivity;
-import com.example.intern.takeattendanceapplicationv2.MainActivity;
+import com.example.intern.takeattendanceapplicationv2t.Information.ScheduleManager;
+import com.example.intern.takeattendanceapplicationv2t.LogInActivity;
 import com.facepp.http.HttpRequests;
 import com.facepp.http.PostParameters;
 
@@ -20,7 +16,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.security.AccessControlContext;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;

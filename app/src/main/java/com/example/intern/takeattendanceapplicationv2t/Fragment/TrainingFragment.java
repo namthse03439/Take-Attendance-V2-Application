@@ -1,13 +1,10 @@
-package com.example.intern.takeattendanceapplicationv2.Fragment;
+package com.example.intern.takeattendanceapplicationv2t.Fragment;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -16,7 +13,6 @@ import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,15 +22,13 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import com.example.intern.takeattendanceapplicationv2.BaseClass.ErrorClass;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.GlobalVariable;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.Notification;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
-import com.example.intern.takeattendanceapplicationv2.LogInActivity;
-import com.example.intern.takeattendanceapplicationv2.MainActivity;
-import com.example.intern.takeattendanceapplicationv2.Preferences;
-import com.example.intern.takeattendanceapplicationv2.R;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.ErrorClass;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.GlobalVariable;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.Notification;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.ServiceGenerator;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.StringClient;
+import com.example.intern.takeattendanceapplicationv2t.Preferences;
+import com.example.intern.takeattendanceapplicationv2t.R;
 import com.facepp.http.HttpRequests;
 import com.facepp.http.PostParameters;
 
@@ -42,7 +36,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,7 +43,6 @@ import java.util.Date;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 /**

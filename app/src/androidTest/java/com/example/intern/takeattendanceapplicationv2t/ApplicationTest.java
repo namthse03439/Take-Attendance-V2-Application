@@ -1,4 +1,4 @@
-package com.example.intern.takeattendanceapplicationv2;
+package com.example.intern.takeattendanceapplicationv2t;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

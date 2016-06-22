@@ -1,4 +1,4 @@
-package com.example.intern.takeattendanceapplicationv2;
+package com.example.intern.takeattendanceapplicationv2t;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -12,11 +12,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.intern.takeattendanceapplicationv2.BaseClass.ErrorClass;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.Notification;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.ServiceGenerator;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.SignupClass;
-import com.example.intern.takeattendanceapplicationv2.BaseClass.StringClient;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.ErrorClass;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.Notification;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.ServiceGenerator;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.SignupClass;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.StringClient;
 
 import org.json.JSONObject;
 
@@ -60,6 +60,7 @@ public class SignUpActivity extends AppCompatActivity {
         });
     }
 
+    ProgressDialog progressDialog;
     public void signup() {
         Log.d(TAG, "Signup");
 
@@ -70,11 +71,11 @@ public class SignUpActivity extends AppCompatActivity {
 
         _signupButton.setEnabled(false);
 
-        final ProgressDialog progressDialog = new ProgressDialog(SignUpActivity.this,
+        progressDialog = new ProgressDialog(SignUpActivity.this,
                 R.style.AppTheme);
         progressDialog.setIndeterminate(true);
         progressDialog.setMessage("Creating Account...");
-        progressDialog.show();
+//        progressDialog.show();
 
         String username = _usernameText.getText().toString();
         String studentId = _studentIdText.getText().toString();
@@ -85,35 +86,31 @@ public class SignUpActivity extends AppCompatActivity {
         // Interact with local server
         //==========================
 
+        progressDialog.show();
         SignupClass user = new SignupClass(username, password, email, studentId, this);
         signupAction(user);
 
         //--------------------------
 
-        new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        // On complete call either onSignupSuccess or onSignupFailed
-                        // depending on success
-                        onSignupSuccess();
-                        // onSignupFailed();
-                        progressDialog.dismiss();
-                    }
-                }, 3000);
     }
 
     public void onSignupSuccess() {
-        _signupButton.setEnabled(true);
+        progressDialog.dismiss();
         setResult(RESULT_OK, null);
-        finish();
+
+        Toast.makeText(getBaseContext(), "Signed up successfully!", Toast.LENGTH_LONG).show();
+
+        Intent intent = new Intent(SignUpActivity.this, LogInActivity.class);
+        startActivity(intent);
+
     }
 
     public void onSignupFailed() {
-        Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_LONG).show();
+        progressDialog.dismiss();
+        Toast.makeText(getBaseContext(), "Signup failed!", Toast.LENGTH_LONG).show();
 
         _signupButton.setEnabled(true);
 
-//        Intent intent = new Intent(SignUpActivity.this, )
     }
 
     public boolean validate() {
@@ -163,7 +160,7 @@ public class SignUpActivity extends AppCompatActivity {
         return valid;
     }
 
-    public void signupAction(SignupClass user){
+    public void signupAction(SignupClass user) {
 
         String returnMessage = "";
 
@@ -178,21 +175,11 @@ public class SignUpActivity extends AppCompatActivity {
 
                     int messageCode = response.code();
                     if(messageCode == 200){
-                        JSONObject data = new JSONObject(response.body().string());
-                        String authorizationCode = data.getString("data");
-
-                        SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
-                        SharedPreferences.Editor editor = pref.edit();
-                        editor.putString("authorizationCode", "Bearer " + authorizationCode);
-                        editor.apply();
-
-                        Notification.showMessage(SignUpActivity.this, 4);
-
-                        Intent intent = new Intent(SignUpActivity.this, LogInActivity.class);
-                        startActivity(intent);
+                        onSignupSuccess();
                     }
                     else{
                         // handle when cannot signup
+                        onSignupFailed();
                         Notification.showMessage(SignUpActivity.this, 5);
                         Intent intent = new Intent(SignUpActivity.this, SignUpActivity.class);
                         startActivity(intent);
