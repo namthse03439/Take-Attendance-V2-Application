@@ -1,6 +1,8 @@
 package com.example.intern.takeattendanceapplicationv2t;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,6 +32,7 @@ import retrofit2.Response;
 
 public class SignUpActivity extends AppCompatActivity {
     private static final String TAG = "SignupActivity";
+    private static boolean isRegisterDevice = false;
 
     @InjectView(R.id.input_username)    EditText _usernameText;
     @InjectView(R.id.input_studentId)   EditText _studentIdText;
@@ -37,6 +41,7 @@ public class SignUpActivity extends AppCompatActivity {
     @InjectView(R.id.input_confirmpass) EditText _confirmedPasswordText;
     @InjectView(R.id.btn_signup)        Button   _signupButton;
     @InjectView(R.id.link_login)        TextView _loginLink;
+    @InjectView(R.id.item_check)        CheckBox _checkBox;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,24 +63,31 @@ public class SignUpActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        _checkBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (_checkBox.isChecked())
+                {
+                    isRegisterDevice = true;
+                }
+                else {
+                    isRegisterDevice = false;
+                }
+            }
+        });
     }
 
-    ProgressDialog progressDialog;
     public void signup() {
         Log.d(TAG, "Signup");
 
+        Preferences.showLoading(SignUpActivity.this, "Sign Up", "Creating Account...");
         if (!validate()) {
             onSignupFailed();
             return;
         }
 
         _signupButton.setEnabled(false);
-
-        progressDialog = new ProgressDialog(SignUpActivity.this,
-                R.style.AppTheme);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setMessage("Creating Account...");
-//        progressDialog.show();
 
         String username = _usernameText.getText().toString();
         String studentId = _studentIdText.getText().toString();
@@ -86,7 +98,6 @@ public class SignUpActivity extends AppCompatActivity {
         // Interact with local server
         //==========================
 
-        progressDialog.show();
         SignupClass user = new SignupClass(username, password, email, studentId, this);
         signupAction(user);
 
@@ -95,7 +106,7 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     public void onSignupSuccess() {
-        progressDialog.dismiss();
+        Preferences.dismissLoading();
         setResult(RESULT_OK, null);
 
         Toast.makeText(getBaseContext(), "Signed up successfully!", Toast.LENGTH_LONG).show();
@@ -106,11 +117,28 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     public void onSignupFailed() {
-        progressDialog.dismiss();
+        Preferences.dismissLoading();
         Toast.makeText(getBaseContext(), "Signup failed!", Toast.LENGTH_LONG).show();
 
         _signupButton.setEnabled(true);
 
+    }
+
+    void showMessage(String message) {
+        AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+        builder2.setMessage(message);
+        builder2.setCancelable(true);
+
+        builder2.setPositiveButton(
+                "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert12 = builder2.create();
+        alert12.show();
     }
 
     public boolean validate() {
@@ -121,6 +149,7 @@ public class SignUpActivity extends AppCompatActivity {
         String email = _emailText.getText().toString();
         String password = _passwordText.getText().toString();
         String confirmedPassword = _confirmedPasswordText.getText().toString();
+
 
         if (username.isEmpty() || username.length() < 4 || username.length() > 255) {
             _usernameText.setError("enter a valid username");
@@ -155,6 +184,12 @@ public class SignUpActivity extends AppCompatActivity {
             valid = false;
         } else {
             _passwordText.setError(null);
+        }
+
+        if (isRegisterDevice == false)
+        {
+            showMessage("Please register device before finish creating acount!");
+            valid = false;
         }
 
         return valid;

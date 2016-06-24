@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 
@@ -49,6 +50,17 @@ public class GlobalVariable {
         int newWidth = (int) (oldWidth * ratio);
         int newHeight = (int) (oldHeight * ratio);
         Bitmap resized = bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+        if (newWidth > newHeight)
+        {
+            Matrix matrix = new Matrix();
+            matrix.postRotate(90);
+
+            Bitmap rotated = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(),
+                    matrix, true);
+
+            resized = rotated;
+        }
 
         File file = new File(mCurrentPhotoPath);
         if(file.exists()) file.delete();
