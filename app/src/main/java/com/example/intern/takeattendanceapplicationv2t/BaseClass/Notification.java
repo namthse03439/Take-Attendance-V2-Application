@@ -25,8 +25,11 @@ public class Notification {
             "3: CODE_UNVERIFIED_EMAIL",
             "4: CODE_UNVERIFIED_DEVICE",
             "5: CODE_UNVERIFIED_EMAIL_DEVICE",
-            "6: CODE_INVALID_ACCOUNT"
+            "6: CODE_INVALID_ACCOUNT",
+            "7: CODE_DUPLICATE_DEVICE"
     };
+
+
     public static void showMessage(final Activity activity, final int mesCode) {
 
         activity.runOnUiThread(new Runnable() {

@@ -12,10 +12,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.intern.takeattendanceapplicationv2t.BaseClass.ErrorClass;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.GlobalVariable;
 import com.example.intern.takeattendanceapplicationv2t.BaseClass.Notification;
 import com.example.intern.takeattendanceapplicationv2t.BaseClass.ServiceGenerator;
 import com.example.intern.takeattendanceapplicationv2t.BaseClass.SignupClass;
 import com.example.intern.takeattendanceapplicationv2t.BaseClass.StringClient;
+import com.google.gson.JsonObject;
+import com.google.gson.internal.Excluder;
+
+import org.json.JSONObject;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -58,118 +63,61 @@ public class RegisterNewDeviceActivity extends AppCompatActivity {
 
     public void register() {
         //TODO register new device
+        String username = _usernameText.getText().toString();
+        String password = _passwordText.getText().toString();
+
+        JsonObject toUp = new JsonObject();
+        toUp.addProperty("username", username);
+        toUp.addProperty("password", password);
+        toUp.addProperty("device_hash", GlobalVariable.getMac(this));
+
+        StringClient client = ServiceGenerator.createService(StringClient.class);
+        Call<ResponseBody> call = client.registerDevice(toUp);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                int messageCode = response.code();
+                if(messageCode == 200){
+                    onRegisterSuccess();
+                }
+                else if(messageCode == 400){
+                    try {
+                        JSONObject data = new JSONObject(response.errorBody().string());
+                        int errorCode = data.getInt("code");
+                        onRegisterFailed(errorCode);
+                    }
+                    catch (Exception e){}
+                }
+                else{
+                    ErrorClass.showError(RegisterNewDeviceActivity.this, 34);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                ErrorClass.showError(RegisterNewDeviceActivity.this, 35);
+            }
+        });
+
     }
 
     public void onRegisterSuccess() {
-        //TODO onRegisterSuccess
 //        progressDialog.dismiss();
-//        setResult(RESULT_OK, null);
-//
-//        Toast.makeText(getBaseContext(), "Signed up successfully!", Toast.LENGTH_LONG).show();
-//
-//        Intent intent = new Intent(SignUpActivity.this, LogInActivity.class);
-//        startActivity(intent);
+        setResult(RESULT_OK, null);
+
+        Toast.makeText(getBaseContext(), "Device registered successfully!", Toast.LENGTH_LONG).show();
+
+        Intent intent = new Intent(RegisterNewDeviceActivity.this, LogInActivity.class);
+        startActivity(intent);
 
     }
 
-    public void onRegisterFailed() {
-        //TODO onRegisterFailed
-//        progressDialog.dismiss();
+    public void onRegisterFailed(int errorCode) {
+//        progressDialog.dismiss();sterFailed
 //        Toast.makeText(getBaseContext(), "Signup failed!", Toast.LENGTH_LONG).show();
-//
+        Notification.showLoginNoti(RegisterNewDeviceActivity.this, errorCode);
 //        _signupButton.setEnabled(true);
 
-    }
-
-    public boolean validate() {
-        //TODO validate
-//        boolean valid = true;
-//
-//        String username = _usernameText.getText().toString();
-//        String studentId = _studentIdText.getText().toString();
-//        String email = _emailText.getText().toString();
-//        String password = _passwordText.getText().toString();
-//        String confirmedPassword = _confirmedPasswordText.getText().toString();
-//
-//        if (username.isEmpty() || username.length() < 4 || username.length() > 255) {
-//            _usernameText.setError("enter a valid username");
-//            valid = false;
-//        } else {
-//            _usernameText.setError(null);
-//        }
-//
-//        if (studentId.isEmpty()) {
-//            _studentIdText.setError("enter a valid studentId");
-//            valid = false;
-//        } else {
-//            _studentIdText.setError(null);
-//        }
-//
-//        if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-//            _emailText.setError("enter a valid email address");
-//            valid = false;
-//        } else {
-//            _emailText.setError(null);
-//        }
-//
-//        if (password.isEmpty() || password.length() < 4 || password.length() > 10) {
-//            _passwordText.setError("between 4 and 10 alphanumeric characters");
-//            valid = false;
-//        } else {
-//            _passwordText.setError(null);
-//        }
-//
-//        if (confirmedPassword.compareTo(password) != 0) {
-//            _confirmedPasswordText.setError("These passwords don't match. Try again?");
-//            valid = false;
-//        } else {
-//            _passwordText.setError(null);
-//        }
-//
-//        return valid;
-        return false;
-    }
-
-    public void registerDeviceAction(SignupClass user) {
-
-        //TODO registerDeviceAction
-//        String returnMessage = "";
-//
-//        StringClient client = ServiceGenerator.createService(StringClient.class);
-//
-//        Call<ResponseBody> call = client.signup(user);
-//
-//        call.enqueue(new Callback<ResponseBody>() {
-//            @Override
-//            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-//                try {
-//
-//                    int messageCode = response.code();
-//                    if(messageCode == 200){
-//                        onSignupSuccess();
-//                    }
-//                    else{
-//                        // handle when cannot signup
-//                        onSignupFailed();
-//                        Notification.showMessage(SignUpActivity.this, 5);
-//                        Intent intent = new Intent(SignUpActivity.this, SignUpActivity.class);
-//                        startActivity(intent);
-//                    }
-//
-//                }
-//                catch(Exception e){
-//                    e.printStackTrace();
-//                    ErrorClass.showError(SignUpActivity.this, 27);
-//                    Intent intent = new Intent(SignUpActivity.this, SignUpActivity.class);
-//                    startActivity(intent);
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<ResponseBody> call, Throwable t) {
-//                ErrorClass.showError(SignUpActivity.this, 28);
-//            }
-//        });
     }
 
 }

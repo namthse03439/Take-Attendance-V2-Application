@@ -1,10 +1,13 @@
 package com.example.intern.takeattendanceapplicationv2t.BaseClass;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 
 import com.example.intern.takeattendanceapplicationv2t.Information.ScheduleManager;
 import com.example.intern.takeattendanceapplicationv2t.LogInActivity;
@@ -197,6 +200,13 @@ public class GlobalVariable {
         if(faceID == null)
             ErrorClass.showError(activity, 30);
         return faceID;
+    }
+
+    public static String getMac(Context context) {
+        WifiManager manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiInfo info = manager.getConnectionInfo();
+        String address = info.getMacAddress();
+        return address;
     }
 
 }

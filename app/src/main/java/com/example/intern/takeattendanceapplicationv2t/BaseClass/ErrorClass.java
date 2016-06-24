@@ -43,7 +43,8 @@ public class ErrorClass {
             "Error 31, DetailedInformationActivity.VerifyThread.run", // 31
             "Error 32, Cannot detect any face in the photo", // 32
             "Error 33, Cannot check if now is valid time for checking attendance - DetailedInformationActivity.checkIfItsTime", // 33
-
+            "Error 34, message code not 200 or 400 - RegisterNewDeviceActivity.register", // 34
+            "Error 35, cannot execute call function - REgisterNewDeviceActivity.register", // 35
     };
 
     public static void showError(final Activity activity, final int errorCode) {

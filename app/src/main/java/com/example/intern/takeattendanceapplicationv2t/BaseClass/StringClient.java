@@ -57,4 +57,6 @@ public interface StringClient {
     @POST("timetable/take-attendance")
     Call<ResponseBody> takeAttendance(@Body TakeAttendanceClass toUp);
 
+    @POST("user/register-device")
+    Call<ResponseBody> registerDevice(@Body JsonObject toUp);
 }

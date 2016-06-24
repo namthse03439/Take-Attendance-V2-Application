@@ -21,14 +21,9 @@ public class SignupClass {
         password = _password;
         email = _email;
         SID = _SID;
-        device_hash = getMac(context);
+        device_hash = GlobalVariable.getMac(context);
     }
 
-    private String getMac(Context context) {
-        WifiManager manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        WifiInfo info = manager.getConnectionInfo();
-        String address = info.getMacAddress();
-        return address;
-    }
+
 
 }
