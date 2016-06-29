@@ -6,12 +6,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -55,7 +57,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
     private BeaconManager beaconManager;
     private Region region;
 
-    Button mBeaconInRangeBtn;
+    TextView tvBeaconInRangeBtn;
     Button mCaptureImageBtn;
 
     boolean remindDiscover = false;
@@ -98,9 +100,9 @@ public class DetailedInformationActivity extends AppCompatActivity {
         getSubjectInformation();
         initDetailedData();
 
-        mBeaconInRangeBtn = (Button) findViewById(R.id.btn_beaconInRange);
-        mBeaconInRangeBtn.setWidth(120);
-        mBeaconInRangeBtn.setLines(2);
+        tvBeaconInRangeBtn = (TextView) findViewById(R.id.tv_beaconInRange);
+        tvBeaconInRangeBtn.setWidth(120);
+        tvBeaconInRangeBtn.setLines(2);
 
         mCaptureImageBtn = (Button) findViewById(R.id.btn_captureImage);
         mCaptureImageBtn.setWidth(120);
@@ -118,7 +120,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
     }
 
     void setButtonsInvisible() {
-        mBeaconInRangeBtn.setVisibility(Button.INVISIBLE);
+        tvBeaconInRangeBtn.setVisibility(Button.INVISIBLE);
         mCaptureImageBtn.setVisibility(Button.INVISIBLE);
     }
 
@@ -126,16 +128,25 @@ public class DetailedInformationActivity extends AppCompatActivity {
         initBeaconEvent();
         initBlinkingButton();
 
-        mBeaconInRangeBtn.startAnimation(animation);
-        mBeaconInRangeBtn.setVisibility(Button.VISIBLE);
-        mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#cc0000"));
-        mBeaconInRangeBtn.setTextColor(Color.WHITE);
-        addListenerToBeaconInRangerBtn();
+        tvBeaconInRangeBtn.setVisibility(Button.VISIBLE);
+        tvBeaconInRangeBtn.setTextColor(Color.WHITE);
+        String message = "SEARCHING" + System.getProperty ("line.separator")
+                + "BEACON...";
+
+        tvBeaconInRangeBtn.setText(message);
+        tvBeaconInRangeBtn.setTextColor(Color.RED);
+        tvBeaconInRangeBtn.setGravity(Gravity.CENTER);
+        tvBeaconInRangeBtn.startAnimation(animation);
+
+        GradientDrawable gd = new GradientDrawable();
+        gd.setColor(0xFFFFFFFF);
+        gd.setCornerRadius(5);
+        gd.setStroke(1, 0xFFCC0000);
+        tvBeaconInRangeBtn.setBackgroundDrawable(gd);
 
         mCaptureImageBtn.setVisibility(Button.INVISIBLE);
         mCaptureImageBtn.setBackgroundColor(Color.parseColor("#008000"));
         mCaptureImageBtn.setTextColor(Color.WHITE);
-        mCaptureImageBtn.setVisibility(Button.INVISIBLE);
         addListenerToCaptureImageBtn();
     }
 
@@ -168,50 +179,6 @@ public class DetailedInformationActivity extends AppCompatActivity {
         animation.setInterpolator(new LinearInterpolator()); // do not alter animation rate
         animation.setRepeatCount(Animation.INFINITE); // Repeat animation infinitely
         animation.setRepeatMode(Animation.REVERSE); // Reverse animation at the end so the button will fade back in
-    }
-
-    private void addListenerToBeaconInRangerBtn()
-    {
-        mBeaconInRangeBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (remindDiscover)
-                {
-                    AlertDialog.Builder builder2 = new AlertDialog.Builder(DetailedInformationActivity.this);
-                    builder2.setMessage("Please capture image to take your attendance!");
-                    builder2.setCancelable(true);
-
-                    builder2.setPositiveButton(
-                            "OK",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
-                            });
-
-                    AlertDialog alert12 = builder2.create();
-                    alert12.show();
-                }
-                else
-                {
-                    AlertDialog.Builder builder2 = new AlertDialog.Builder(DetailedInformationActivity.this);
-                    builder2.setMessage("Please stay close to the beacon\n " +
-                            "and wait Beacon In Range change to green color!");
-                    builder2.setCancelable(true);
-
-                    builder2.setPositiveButton(
-                            "OK",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
-                            });
-
-                    AlertDialog alert12 = builder2.create();
-                    alert12.show();
-                }
-            }
-        });
     }
 
     private void addListenerToCaptureImageBtn()
@@ -378,8 +345,19 @@ public class DetailedInformationActivity extends AppCompatActivity {
                             AlertDialog alert12 = builder2.create();
                             alert12.show();
 
-                            mBeaconInRangeBtn.clearAnimation();
-                            mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#008000"));
+                            tvBeaconInRangeBtn.clearAnimation();
+                            String message = "BEACON" + System.getProperty ("line.separator")
+                                    + "IN RANGE!";
+
+                            tvBeaconInRangeBtn.setText(message);
+                            tvBeaconInRangeBtn.setTextColor(Color.parseColor("#FF00FF7F"));
+                            tvBeaconInRangeBtn.setGravity(Gravity.CENTER);
+
+                            GradientDrawable gd = new GradientDrawable();
+                            gd.setColor(0xFFFFFFFF);
+                            gd.setCornerRadius(5);
+                            gd.setStroke(1, 0xFF00FF7F);
+                            tvBeaconInRangeBtn.setBackgroundDrawable(gd);
 
                             mCaptureImageBtn.setVisibility(Button.VISIBLE);
                             mCaptureImageBtn.startAnimation(animation);
@@ -387,8 +365,20 @@ public class DetailedInformationActivity extends AppCompatActivity {
                     } else {
                         remindDiscover = false;
 
-                        mBeaconInRangeBtn.setBackgroundColor(Color.parseColor("#cc0000"));
-                        mBeaconInRangeBtn.startAnimation(animation);
+                        String message = "SEARCHING" + System.getProperty ("line.separator")
+                                + "BEACON...";
+
+                        tvBeaconInRangeBtn.setText(message);
+                        tvBeaconInRangeBtn.setTextColor(Color.RED);
+                        tvBeaconInRangeBtn.setGravity(Gravity.CENTER);
+
+                        GradientDrawable gd = new GradientDrawable();
+                        gd.setColor(0xFFFFFFFF);
+                        gd.setCornerRadius(5);
+                        gd.setStroke(1, 0xFFCC0000);
+                        tvBeaconInRangeBtn.setBackgroundDrawable(gd);
+
+                        tvBeaconInRangeBtn.startAnimation(animation);
 
                         mCaptureImageBtn.clearAnimation();
                         mCaptureImageBtn.setVisibility(Button.INVISIBLE);
@@ -476,7 +466,7 @@ public class DetailedInformationActivity extends AppCompatActivity {
 
     protected static double calculateDistance(int txPower, double rssi) {
         if (rssi == 0) {
-            return -1.0; // if we cannot determine distance, return -1.
+            return 1000.0; // if we cannot determine distance, return -1.
         }
 
         double ratio = rssi * 1.0 / txPower;
@@ -654,7 +644,7 @@ class VerifyThread extends Thread{
                                 beaconManager.stopRanging(region);
 
                                 Button captureImage = (Button) activity.findViewById(R.id.btn_captureImage);
-                                Button beaconInRange = (Button) activity.findViewById(R.id.btn_beaconInRange);
+                                TextView beaconInRange = (TextView) activity.findViewById(R.id.tv_beaconInRange);
 
                                 captureImage.clearAnimation();
                                 beaconInRange.clearAnimation();

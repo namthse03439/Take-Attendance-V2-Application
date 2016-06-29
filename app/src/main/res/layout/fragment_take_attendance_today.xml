@@ -81,28 +81,11 @@
             </LinearLayout>
         </TableLayout>
 
-        <RelativeLayout
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginTop="10dp"
-            android:id="@+id/layout_instruction">
-
-            <Button
-                android:layout_alignParentRight="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/btn_instruction"
-                android:text="Instruction">
-            </Button>
-        </RelativeLayout>
-
         <ScrollView
             android:id="@+id/layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@+id/header"
-            android:layout_above="@+id/layout_instruction"
             android:fillViewport="true"
             android:scrollbarStyle="insideOverlay"
             android:orientation="horizontal"
