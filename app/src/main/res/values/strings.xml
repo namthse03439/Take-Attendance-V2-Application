@@ -3,7 +3,8 @@
 
     <string name="title_section1">Take Attendance Today</string>
     <string name="title_section2">Training</string>
-    <string name="title_section3">Attendance History</string>
+    <string name="title_section3">Timetable</string>
+    <string name="title_section4">Attendance History</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -23,10 +24,18 @@
     <string name="instruction_2"> You present at class in time of this subject. </string>
     <string name="instruction_3"> You present at class late more than 15 minutes from the start time of this subject.  </string>
     <string name="instruction_4"> You absent at class this subject. </string>
-    <string name="instruction_5"> TIME INSTRUCTION:\n  A subject will be availabel to take attendance between 15 minutes before start time to the end time of it.\n
-    Present status: between 15 minutes before to 15 minutes after start time. (E.g. Start time is 8.00 AM, so you need to present from 7.45 - 8.15 AM\n
-    Late status   : late more than 15 minutes after start time to the end time of the subject. </string>
 
     <string name="action_registerDevice"> I agree to register this device for my account. </string>
+
+    <string-array name="time_table_array">
+        <item>In next 7 days</item>
+        <item>In next 14 days</item>
+        <item>In next 30 days</item>
+        <item>In next 60 days</item>
+        <item>7 days ago</item>
+        <item>14 days ago</item>
+        <item>30 days ago</item>
+        <item>60 days ago</item>
+    </string-array>
 
 </resources>

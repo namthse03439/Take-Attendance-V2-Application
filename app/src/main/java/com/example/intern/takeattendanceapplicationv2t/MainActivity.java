@@ -20,6 +20,7 @@ import android.support.v4.widget.DrawerLayout;
 import com.example.intern.takeattendanceapplicationv2t.BaseClass.GlobalVariable;
 import com.example.intern.takeattendanceapplicationv2t.Fragment.AttendanceReportByTimeFragment;
 import com.example.intern.takeattendanceapplicationv2t.Fragment.TakeAttendanceToday;
+import com.example.intern.takeattendanceapplicationv2t.Fragment.TimeTableFragment;
 import com.example.intern.takeattendanceapplicationv2t.Fragment.TrainingFragment;
 
 
@@ -104,11 +105,11 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
             case 2:{
-                fragment = new AttendanceReportByTimeFragment();
+                fragment = new TimeTableFragment();
                 break;
             }
             case 3:{
-//                fragment = new AlertFragment();
+                fragment = new AttendanceReportByTimeFragment();
                 break;
             }
             case 4:{
@@ -135,7 +136,11 @@ public class MainActivity extends AppCompatActivity
                 mTitle = getString(R.string.title_section2);
                 break;
             case 3:
+
                 mTitle = getString(R.string.title_section3);
+                break;
+            case 4:
+                mTitle = getString(R.string.title_section4);
                 break;
         }
     }

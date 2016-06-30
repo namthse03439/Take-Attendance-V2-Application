@@ -149,8 +149,6 @@ public class TrainingFragment extends Fragment {
                     gd.setColor(0xFFCC0000);
                     tv.setText(R.string.instruction_4);
                     break;
-                case 4:
-                    tv.setText(R.string.instruction_5);
             }
 
             tv.setTextSize(16);

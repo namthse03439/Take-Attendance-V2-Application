@@ -1,44 +1,27 @@
 package com.example.intern.takeattendanceapplicationv2t.Fragment;
 
 import android.app.Activity;
-import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.content.Context;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.Spinner;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
 
-import com.example.intern.takeattendanceapplicationv2t.Information.ScheduleManager;
 import com.example.intern.takeattendanceapplicationv2t.R;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link AttendanceReportByTimeFragment.OnFragmentInteractionListener} interface
+ * {@link TimeTableFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link AttendanceReportByTimeFragment#newInstance} factory method to
+ * Use the {@link TimeTableFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AttendanceReportByTimeFragment extends Fragment {
+public class TimeTableFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -48,21 +31,13 @@ public class AttendanceReportByTimeFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private TableLayout[] tls = new TableLayout[1];
+    private OnFragmentInteractionListener mListener;
 
     private View myView;
 
     private Activity context;
 
-    private TextView subjectList;
-
-    static final int START_DATE_DIALOG_ID = 999;
-    static final int END_DATE_DIALOG_ID = 1000;
-
-
-    private OnFragmentInteractionListener mListener;
-
-    public AttendanceReportByTimeFragment() {
+    public TimeTableFragment() {
         // Required empty public constructor
     }
 
@@ -72,11 +47,11 @@ public class AttendanceReportByTimeFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment AttendanceReportByTimeFragment.
+     * @return A new instance of fragment TimeTableFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static AttendanceReportByTimeFragment newInstance(String param1, String param2) {
-        AttendanceReportByTimeFragment fragment = new AttendanceReportByTimeFragment();
+    public static TimeTableFragment newInstance(String param1, String param2) {
+        TimeTableFragment fragment = new TimeTableFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -92,36 +67,24 @@ public class AttendanceReportByTimeFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        context = getActivity();
-    }
-
-    private void getTableLayout()
-    {
-        tls[0] = (TableLayout) myView.findViewById(R.id.tableLayout1);
+        context = this.getActivity();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        myView = inflater.inflate(R.layout.fragment_attendance_report_by_time, container, false);
+        myView = inflater.inflate(R.layout.fragment_time_table, container, false);
 
-        subjectList = (TextView) myView.findViewById(R.id.header2);
+        Spinner spinner = (Spinner) myView.findViewById(R.id.time_table_spinner);
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context,
+                R.array.time_table_array, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
 
-        subjectList.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Spinner spinner = (Spinner) myView.findViewById(R.id.time_table_spinner);
-                // Create an ArrayAdapter using the string array and a default spinner layout
-                
-                ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context,
-                        R.array.time_table_array, android.R.layout.simple_spinner_item);
-                // Specify the layout to use when the list of choices appears
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                // Apply the adapter to the spinner
-                spinner.setAdapter(adapter);
-            }
-        });
 
         return myView;
     }
@@ -164,5 +127,4 @@ public class AttendanceReportByTimeFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
-
 }

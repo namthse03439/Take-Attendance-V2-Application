@@ -42,7 +42,8 @@
         <activity android:name=".SignUpActivity" />
         <activity android:name=".TakeAttendanceTodayActivity" />
         <activity android:name=".DetailedInformationActivity" />
-        <activity android:name=".RegisterNewDeviceActivity"></activity>
+        <activity android:name=".RegisterNewDeviceActivity" />
+        <activity android:name=".TimeTableActivity"></activity>
     </application>
 
 </manifest>
