@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,8 +21,14 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.ErrorClass;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.ServiceGenerator;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.StringClient;
 import com.example.intern.takeattendanceapplicationv2t.Information.ScheduleManager;
 import com.example.intern.takeattendanceapplicationv2t.R;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +36,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -106,6 +118,8 @@ public class AttendanceReportByTimeFragment extends Fragment {
         // Inflate the layout for this fragment
         myView = inflater.inflate(R.layout.fragment_attendance_report_by_time, container, false);
 
+        getListsemesterAndLastestSemesterClassesFunction();
+
         subjectList = (TextView) myView.findViewById(R.id.header2);
 
         subjectList.setOnClickListener(new View.OnClickListener() {
@@ -163,6 +177,114 @@ public class AttendanceReportByTimeFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    void getListsemesterAndLastestSemesterClassesFunction() {
+        SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+        Call<ResponseBody> call = client.getListSemesters();
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    int messageCode = response.code();
+                    JSONArray listSemesters = new JSONArray(response.body().string());
+                    String lastSmt = listSemesters.getString(listSemesters.length() - 1);
+                    getListClassesFunction(lastSmt);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+    }
+
+    void getListClassesFunction(String semester) {
+        SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+        Call<ResponseBody> call = client.getListClasses(semester);
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    int messageCode = response.code();
+                    JSONArray listClasses = new JSONArray(response.body().string());
+                    //TODO: a Nam
+                    System.out.print("OK");
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+
+    }
+
+    void getAttendanceHistoryBySemesterFunction(String semester) {
+        SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+        Call<ResponseBody> call = client.getAttendanceHistory(semester);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    int messageCode = response.code();
+                    JSONObject attendanceHistory = new JSONObject(response.body().string());
+                    System.out.print("OK");
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+    }
+
+    void getTimeTableNextKDays(int k) {
+        SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+        Call<ResponseBody> call = client.getNextDays(k);
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    int messageCode = response.code();
+                    JSONObject listClasses = new JSONObject(response.body().string());
+                    //TODO: a Nam
+                    System.out.print("OK");
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
     }
 
 }

@@ -9,6 +9,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 /**
  * Created by Tung on 5/31/2016.
@@ -38,6 +39,18 @@ public interface StringClient {
 
     @GET("timetable/today")
     Call<ResponseBody> getTimetableToday();
+
+    @GET("attendance/list-semester")
+    Call<ResponseBody> getListSemesters();
+
+    @GET("attendance/list-class-section")
+    Call<ResponseBody> getListClasses(@Query("semester") String semester);
+
+    @GET("attendance/attendance-history")
+    Call<ResponseBody> getAttendanceHistory(@Query("semester") String semester);
+
+    @GET("timetable/next-days")
+    Call<ResponseBody> getNextDays(@Query("days") int k);
 
     @POST("user/login")
     Call<ResponseBody> login(@Body LoginClass up);
