@@ -1,11 +1,10 @@
 package com.example.intern.takeattendanceapplicationv2t.Fragment;
 
 import android.app.Activity;
-import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -13,29 +12,23 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import com.example.intern.takeattendanceapplicationv2t.BaseClass.ErrorClass;
+import com.example.intern.takeattendanceapplicationv2t.BaseClass.GlobalVariable;
 import com.example.intern.takeattendanceapplicationv2t.BaseClass.ServiceGenerator;
 import com.example.intern.takeattendanceapplicationv2t.BaseClass.StringClient;
-import com.example.intern.takeattendanceapplicationv2t.Information.ScheduleManager;
+import com.example.intern.takeattendanceapplicationv2t.Preferences;
 import com.example.intern.takeattendanceapplicationv2t.R;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -60,17 +53,17 @@ public class AttendanceReportByTimeFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private TableLayout[] tls = new TableLayout[1];
+    private TableLayout[] tls = new TableLayout[3];
 
     private View myView;
 
     private Activity context;
 
-    private TextView subjectList;
+    private Spinner spin;
+    private Spinner subjectSpin;
 
-    static final int START_DATE_DIALOG_ID = 999;
-    static final int END_DATE_DIALOG_ID = 1000;
-
+    private String semesterList[];
+    private String classSubject[];
 
     private OnFragmentInteractionListener mListener;
 
@@ -110,6 +103,8 @@ public class AttendanceReportByTimeFragment extends Fragment {
     private void getTableLayout()
     {
         tls[0] = (TableLayout) myView.findViewById(R.id.tableLayout1);
+        tls[1] = (TableLayout) myView.findViewById(R.id.tableLayout2);
+        tls[2] = (TableLayout) myView.findViewById(R.id.tableLayout3);
     }
 
     @Override
@@ -118,26 +113,214 @@ public class AttendanceReportByTimeFragment extends Fragment {
         // Inflate the layout for this fragment
         myView = inflater.inflate(R.layout.fragment_attendance_report_by_time, container, false);
 
+        spin = (Spinner) myView.findViewById(R.id.time_table_semester);
+        subjectSpin = (Spinner) myView.findViewById(R.id.header2);
+
+        getTableLayout();
         getListsemesterAndLastestSemesterClassesFunction();
 
-        subjectList = (TextView) myView.findViewById(R.id.header2);
+        return myView;
+    }
 
-        subjectList.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Spinner spinner = (Spinner) myView.findViewById(R.id.time_table_spinner);
-                // Create an ArrayAdapter using the string array and a default spinner layout
-                
-                ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context,
-                        R.array.time_table_array, android.R.layout.simple_spinner_item);
-                // Specify the layout to use when the list of choices appears
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                // Apply the adapter to the spinner
-                spinner.setAdapter(adapter);
+    private void initSemesterSpinner()
+    {
+        ArrayList<String> spinnerArray = new ArrayList<String>();
+        for(int i = 0; i < semesterList.length; i++)
+        {
+            spinnerArray.add(semesterList[i]);
+        }
+
+
+        ArrayAdapter spinnerArrayAdapter = new ArrayAdapter(context,
+                android.R.layout.simple_spinner_dropdown_item,
+                spinnerArray);
+
+        spin.setAdapter(spinnerArrayAdapter);
+        spin.setSelection(GlobalVariable.currentSemester);
+
+        spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                if (GlobalVariable.currentSemester != position)
+                {
+                    GlobalVariable.currentSemester = position;
+                    GlobalVariable.currentSubjectView = 0;
+                    getAttendanceHistoryBySemesterFunction(semesterList[position]);
+                }
+            }
+
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                return;
             }
         });
+    }
 
-        return myView;
+    private void setSpinnerForSubjectView()
+    {
+        ArrayList<String> spinnerArray = new ArrayList<String>();
+        for(int i = 0; i < classSubject.length; i++)
+        {
+            spinnerArray.add(classSubject[i]);
+        }
+
+        ArrayAdapter spinnerArrayAdapter = new ArrayAdapter(context,
+                R.layout.spinner_item,
+                spinnerArray);
+
+        subjectSpin.setAdapter(spinnerArrayAdapter);
+        subjectSpin.setSelection(GlobalVariable.currentSubjectView);
+
+        subjectSpin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                if (GlobalVariable.currentSubjectView != position)
+                {
+                    GlobalVariable.currentSubjectView = position;
+                    loadRecord();
+                }
+            }
+
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                return;
+            }
+        });
+    }
+
+    private String getDate(String date)
+    {
+        if (date.compareTo("SUN") == 0) return "Sunday";
+        if (date.compareTo("MON") == 0) return "Monday";
+        if (date.compareTo("TUES") == 0) return "Tuesday";
+        if (date.compareTo("WED") == 0) return "Wednesday";
+        if (date.compareTo("THUR") == 0) return "Thursday";
+        if (date.compareTo("FRI") == 0) return "Friday";
+        if (date.compareTo("SAT") == 0) return "Saturday";
+
+        return "";
+    }
+
+    private String getComponent(String component)
+    {
+        if (component.compareTo("TUT") == 0) return "Tutorial";
+        if (component.compareTo("LEC") == 0) return "Lecture";
+        if (component.compareTo("PRA") == 0) return "Practical";
+
+        return "";
+    }
+
+    private void removeAllView()
+    {
+        tls[0].removeAllViews();
+        tls[1].removeAllViews();
+        tls[2].removeAllViews();
+    }
+
+    private void loadRecord()
+    {
+        try
+        {
+            JSONArray selectedSubject = GlobalVariable.currentAttendanceHistory.getJSONArray(classSubject[GlobalVariable.currentSubjectView]);
+            removeAllView();
+            for(int i = 0 ; i < selectedSubject.length(); i++)
+            {
+                JSONObject subject = selectedSubject.getJSONObject(i);
+
+                //+ Create background based on status
+                GradientDrawable gd = new GradientDrawable();
+
+                final int status = Integer.parseInt(subject.getString("status"));
+                switch (status) {
+                    case 0:
+                        gd.setColor(0xFFC0C0C0);
+                        break;
+                    case 1:
+                        gd.setColor(0xFF00FF7F);
+                        break;
+                    case 2:
+                        gd.setColor(0xFFFFA500);
+                        break;
+                    case 3:
+                        gd.setColor(0xFFCC0000);
+                        break;
+                }
+                gd.setCornerRadius(5);
+                gd.setStroke(1, 0xFF000000);
+                //- Create background based on status
+
+                //+ Define same height for each row
+                TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, Gravity.CENTER);
+                params.height = 130;
+                params.setMargins(1, 1, 1, 1);
+                //- Define same height for each row
+
+                //+ Add item to Date column
+                String weekDay = subject.getString("weekday");
+                String date = subject.getString("date");
+                String dateInfo = getDate(weekDay) + ", " + System.getProperty ("line.separator") + date;
+
+                TextView tvDate = new TextView(context);
+                tvDate.setText(dateInfo);
+                tvDate.setTextColor(Color.WHITE);
+                tvDate.setGravity(Gravity.CENTER);
+                tvDate.setBackgroundDrawable(gd);
+                tvDate.setLayoutParams(params);
+
+                TableRow tableRowDate = new TableRow(context);
+                tableRowDate.addView(tvDate);
+                tableRowDate.setLayoutParams(params);
+
+                tls[0].addView(tableRowDate);
+                //- Add item to Date column
+
+                //+ Add item to Subject Information column
+                String component = subject.getString("component");
+                String lecture = "Mr.Zhang Qinjie";
+
+                //TODO
+                String subjectInfo = getComponent(component) + System.getProperty ("line.separator")
+                                        + lecture;
+
+                TextView tvSubjectInfo = new TextView(context);
+                tvSubjectInfo.setText(subjectInfo);
+                tvSubjectInfo.setTextColor(Color.WHITE);
+                tvSubjectInfo.setGravity(Gravity.CENTER);
+                tvSubjectInfo.setBackgroundDrawable(gd);
+                tvSubjectInfo.setLayoutParams(params);
+
+                TableRow tableRowSubject = new TableRow(context);
+                tableRowSubject.addView(tvSubjectInfo);
+                tableRowSubject.setLayoutParams(params);
+
+                tls[1].addView(tableRowSubject);
+                //- Add item to Subject Information column
+
+                //+ Add item to Time column
+                String startTime = subject.getString("start_time");
+                String endTime = subject.getString("end_time");
+
+                String time = startTime + System.getProperty ("line.separator")
+                                            + "-" + System.getProperty ("line.separator")
+                                            + endTime;
+
+
+
+                TextView tvTimeInfo = new TextView(context);
+                tvTimeInfo.setText(time);
+                tvTimeInfo.setTextColor(Color.WHITE);
+                tvTimeInfo.setGravity(Gravity.CENTER);
+                tvTimeInfo.setBackgroundDrawable(gd);
+                tvTimeInfo.setLayoutParams(params);
+
+                TableRow tableRowTime = new TableRow(context);
+                tableRowTime.addView(tvTimeInfo);
+                tableRowTime.setLayoutParams(params);
+
+                tls[2].addView(tableRowTime);
+                //- Add item to Time column
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -180,6 +363,7 @@ public class AttendanceReportByTimeFragment extends Fragment {
     }
 
     void getListsemesterAndLastestSemesterClassesFunction() {
+        Preferences.showLoading(context, "Setup", "Loading data from server...");
         SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
         String auCode = pref.getString("authorizationCode", null);
 
@@ -191,8 +375,19 @@ public class AttendanceReportByTimeFragment extends Fragment {
                 try {
                     int messageCode = response.code();
                     JSONArray listSemesters = new JSONArray(response.body().string());
+                    semesterList = new String[listSemesters.length()];
+                    for(int i = 0; i < listSemesters.length(); i++)
+                    {
+                        semesterList[i] = listSemesters.getString(i);
+                    }
+
+                    GlobalVariable.currentSemester = listSemesters.length() - 1;
+                    initSemesterSpinner();
+
                     String lastSmt = listSemesters.getString(listSemesters.length() - 1);
                     getListClassesFunction(lastSmt);
+
+                    getAttendanceHistoryBySemesterFunction(String.valueOf(semesterList[GlobalVariable.currentSemester]));
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -217,9 +412,16 @@ public class AttendanceReportByTimeFragment extends Fragment {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
+                    Preferences.dismissLoading();
                     int messageCode = response.code();
                     JSONArray listClasses = new JSONArray(response.body().string());
-                    //TODO: a Nam
+                    classSubject = new String[listClasses.length()];
+                    for(int i = 0; i < listClasses.length(); i++)
+                    {
+                        classSubject[i] = listClasses.getString(i);
+                    }
+                    setSpinnerForSubjectView();
+
                     System.out.print("OK");
                 }
                 catch (Exception e){
@@ -231,33 +433,44 @@ public class AttendanceReportByTimeFragment extends Fragment {
 
             }
         });
-
     }
 
     void getAttendanceHistoryBySemesterFunction(String semester) {
-        SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
-        String auCode = pref.getString("authorizationCode", null);
+        try
+        {
+            Preferences.showLoading(context, "Initialize", "Loading data from server...");
+            SharedPreferences pref = getActivity().getSharedPreferences("ATK_pref", 0);
+            String auCode = pref.getString("authorizationCode", null);
 
-        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
-        Call<ResponseBody> call = client.getAttendanceHistory(semester);
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    int messageCode = response.code();
-                    JSONObject attendanceHistory = new JSONObject(response.body().string());
-                    System.out.print("OK");
+            StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+            Call<ResponseBody> call = client.getAttendanceHistory(semester);
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    try {
+                        Preferences.dismissLoading();
+                        int messageCode = response.code();
+                        GlobalVariable.currentAttendanceHistory = new JSONObject(response.body().string());
+
+                        getListClassesFunction(semesterList[GlobalVariable.currentSemester]);
+                        GlobalVariable.currentSubjectView = 0;
+
+                        loadRecord();
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-                catch (Exception e) {
-                    e.printStackTrace();
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+
                 }
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-            }
-        });
+            });
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     void getTimeTableNextKDays(int k) {
@@ -286,5 +499,4 @@ public class AttendanceReportByTimeFragment extends Fragment {
             }
         });
     }
-
 }

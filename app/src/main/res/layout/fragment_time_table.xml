@@ -53,7 +53,7 @@
                 <TableLayout
                     android:orientation="vertical"
                     android:layout_margin="1dp"
-                    android:layout_weight="82"
+                    android:layout_weight="78"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -64,8 +64,8 @@
                             android:gravity="center"
                             android:layout_weight="1"
                             android:lines="2"
-                            android:background="@android:color/holo_blue_light"
-                            android:text="Date" />
+                            android:text="Date"
+                            style="@style/tv_style"/>
                     </TableRow>
                 </TableLayout>
 
@@ -77,14 +77,10 @@
                     android:layout_height="wrap_content">
 
                     <TableRow>
-                        <TextView
+                        <Spinner
                             android:id="@+id/header2"
-                            android:textColor="@android:color/white"
-                            android:gravity="center"
                             android:layout_weight="4"
-                            android:lines="2"
-                            android:background="@android:color/holo_blue_light"
-                            android:text="Subject Information" />
+                            style="@style/spinner_style_2"/>
                     </TableRow>
                 </TableLayout>
 
@@ -102,7 +98,7 @@
                             android:gravity="center"
                             android:layout_weight="1"
                             android:lines="2"
-                            android:background="@android:color/holo_blue_light"
+                            style="@style/tv_style"
                             android:text="Time" />
                     </TableRow>
                 </TableLayout>
@@ -133,7 +129,7 @@
                     android:id="@+id/tableLayout1"
                     android:orientation="vertical"
                     android:layout_margin="1dp"
-                    android:layout_weight="82"
+                    android:layout_weight="78"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 </TableLayout>

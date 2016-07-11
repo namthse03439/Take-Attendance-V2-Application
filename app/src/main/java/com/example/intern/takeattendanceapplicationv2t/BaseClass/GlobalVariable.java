@@ -37,6 +37,19 @@ public class GlobalVariable {
     public static boolean loadedTimetableToday = false;
     public static final double imageArea = 200000;
 
+    //+ Attendance History
+    public static int currentSemester = 0;
+    public static int currentSubjectView = 0;
+    public static JSONObject currentAttendanceHistory = null;
+    //- Attendance History
+
+    //+ Timetable
+    public static int currentTimeSelection = 0;
+    public static int currentSubjectSelection = 0;
+    public static JSONObject currentTimetable = null;
+    //- Timetable
+
+
     public static void resizeImage(Activity activity, String mCurrentPhotoPath) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;

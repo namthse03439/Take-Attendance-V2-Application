@@ -28,14 +28,10 @@
     <string name="action_registerDevice"> I agree to register this device for my account. </string>
 
     <string-array name="time_table_array">
-        <item>In next 7 days</item>
+        <item></item>
         <item>In next 14 days</item>
         <item>In next 30 days</item>
         <item>In next 60 days</item>
-        <item>7 days ago</item>
-        <item>14 days ago</item>
-        <item>30 days ago</item>
-        <item>60 days ago</item>
     </string-array>
 
 </resources>
