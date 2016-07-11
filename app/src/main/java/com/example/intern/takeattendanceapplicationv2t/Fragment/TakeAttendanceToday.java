@@ -166,8 +166,6 @@ public class TakeAttendanceToday extends Fragment {
 
             tvs.setText(values.get(0));
 
-            //tvs.setLines(5);
-
             TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, Gravity.CENTER);
             params.height = 140;
             tvs.setLayoutParams(params);

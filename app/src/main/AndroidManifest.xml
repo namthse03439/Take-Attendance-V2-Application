@@ -43,7 +43,8 @@
         <activity android:name=".TakeAttendanceTodayActivity" />
         <activity android:name=".DetailedInformationActivity" />
         <activity android:name=".RegisterNewDeviceActivity" />
-        <activity android:name=".TimeTableActivity"></activity>
+        <activity android:name=".TimeTableActivity" />
+        <activity android:name=".ChangePasswordActivity"></activity>
     </application>
 
 </manifest>

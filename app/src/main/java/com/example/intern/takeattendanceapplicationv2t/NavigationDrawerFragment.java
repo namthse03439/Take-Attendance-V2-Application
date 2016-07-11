@@ -255,14 +255,23 @@ public class NavigationDrawerFragment extends Fragment {
             return true;
         }
 
+        if (item.getItemId() == R.id.action_changePassword) {
+            changePasswordAction();
+            return true;
+        }
+
         if (item.getItemId() == R.id.action_logout) {
             logoutAction();
-
-            Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    void changePasswordAction()
+    {
+        Intent intent = new Intent(getContext(), ChangePasswordActivity.class);
+        startActivity(intent);
     }
 
     void logoutAction(){
