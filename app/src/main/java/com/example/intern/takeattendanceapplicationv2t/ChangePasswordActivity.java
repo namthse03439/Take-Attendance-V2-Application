@@ -82,12 +82,12 @@ public class ChangePasswordActivity extends AppCompatActivity {
     public void signup() {
         Log.d(TAG, "Change Password");
 
-        Preferences.showLoading(ChangePasswordActivity.this, "Change Password", "Processing...");
         if (!validate()) {
             onSignupFailed();
             return;
         }
 
+        Preferences.showLoading(ChangePasswordActivity.this, "Change Password", "Processing...");
         _changePassButton.setEnabled(false);
 
         String currentPassword = _currentpasswordText.getText().toString();
@@ -159,6 +159,13 @@ public class ChangePasswordActivity extends AppCompatActivity {
 
         if (password.isEmpty() || password.length() < 4 || password.length() > 10) {
             _passwordText.setError("between 4 and 10 alphanumeric characters");
+            valid = false;
+        } else {
+            _passwordText.setError(null);
+        }
+
+        if (password.compareTo(currentPassword) == 0) {
+            _passwordText.setError("new password must be different with current password");
             valid = false;
         } else {
             _passwordText.setError(null);
