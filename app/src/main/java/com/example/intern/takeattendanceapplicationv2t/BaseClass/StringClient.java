@@ -72,4 +72,7 @@ public interface StringClient {
 
     @POST("user/register-device")
     Call<ResponseBody> registerDevice(@Body JsonObject toUp);
+
+    @POST("user/change-password")
+    Call<ResponseBody> changePassword(@Body JsonObject toUp);
 }

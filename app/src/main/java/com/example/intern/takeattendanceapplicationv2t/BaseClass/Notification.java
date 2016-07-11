@@ -15,7 +15,10 @@ public class Notification {
             "Untrained person", // 3
             "Signed up successfully!\nYou must verify your email address before any further request", //4
             "You are not signed up! Please try again!", // 5
-
+            "You must connect to the internet!", // 6
+            "Password changed successfully!", // 7
+            "INCORRECT_PASSWORD", // 8
+            "INVALID_NEW_PASSWORD", // 9
     };
 
     public static String [] LoginNoti = {

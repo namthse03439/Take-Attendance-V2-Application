@@ -45,6 +45,7 @@ import com.example.intern.takeattendanceapplicationv2t.BaseClass.Notification;
 import com.example.intern.takeattendanceapplicationv2t.BaseClass.ServiceGenerator;
 import com.example.intern.takeattendanceapplicationv2t.BaseClass.SignupClass;
 import com.example.intern.takeattendanceapplicationv2t.BaseClass.StringClient;
+import com.google.gson.JsonObject;
 
 import org.json.JSONObject;
 
@@ -65,6 +66,10 @@ public class ChangePasswordActivity extends AppCompatActivity {
     @InjectView(R.id.input_confirmpass) EditText _confirmedPasswordText;
     @InjectView(R.id.btn_changePass)    Button   _changePassButton;
 
+    String currentPassword;
+    String password;
+    String confirmedPassword;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,30 +89,23 @@ public class ChangePasswordActivity extends AppCompatActivity {
 
         Preferences.showLoading(ChangePasswordActivity.this, "Change Password", "Processing...");
         if (!validate()) {
-            onSignupFailed();
+            onChangePasswordFailed();
             return;
         }
 
         _changePassButton.setEnabled(false);
 
-        String currentPassword = _currentpasswordText.getText().toString();
-        String password = _passwordText.getText().toString();
-        String confirmedPassword = _confirmedPasswordText.getText().toString();
+        currentPassword = _currentpasswordText.getText().toString();
+        password = _passwordText.getText().toString();
+        confirmedPassword = _confirmedPasswordText.getText().toString();
 
-        // Interact with local server
-        //==========================
-
-        // TODO Tung
-//        SignupClass user = new SignupClass(username, password, email, studentId, this);
-//        signupAction(user);
-
-        //--------------------------
+        changePasswordAction();
 
     }
 
-    public void onSignupSuccess() {
+    public void onChangePasswordSuccess() {
         //TODO
-//        Preferences.dismissLoading();
+        Preferences.dismissLoading();
 //        setResult(RESULT_OK, null);
 //
 //        Toast.makeText(getBaseContext(), "Signed up successfully!", Toast.LENGTH_LONG).show();
@@ -117,30 +115,13 @@ public class ChangePasswordActivity extends AppCompatActivity {
 
     }
 
-    public void onSignupFailed() {
+    public void onChangePasswordFailed() {
         //TODO
-//        Preferences.dismissLoading();
+        Preferences.dismissLoading();
 //        Toast.makeText(getBaseContext(), "Signup failed!", Toast.LENGTH_LONG).show();
 //
 //        _signupButton.setEnabled(true);
 
-    }
-
-    void showMessage(String message) {
-        AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
-        builder2.setMessage(message);
-        builder2.setCancelable(true);
-
-        builder2.setPositiveButton(
-                "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
-
-        AlertDialog alert12 = builder2.create();
-        alert12.show();
     }
 
     public boolean validate() {
@@ -174,46 +155,52 @@ public class ChangePasswordActivity extends AppCompatActivity {
         return valid;
     }
 
-    public void signupAction(SignupClass user) {
+    void changePasswordAction() {
+        SharedPreferences pref = this.getSharedPreferences("ATK_pref", 0);
+        String auCode = pref.getString("authorizationCode", null);
 
-        //TODO
-//        String returnMessage = "";
-//
-//        StringClient client = ServiceGenerator.createService(StringClient.class);
-//
-//        Call<ResponseBody> call = client.signup(user);
-//
-//        call.enqueue(new Callback<ResponseBody>() {
-//            @Override
-//            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-//                try {
-//
-//                    int messageCode = response.code();
-//                    if(messageCode == 200){
-//                        onSignupSuccess();
-//                    }
-//                    else{
-//                        // handle when cannot signup
-//                        onSignupFailed();
-//                        Notification.showMessage(SignUpActivity.this, 5);
-//                        Intent intent = new Intent(SignUpActivity.this, SignUpActivity.class);
-//                        startActivity(intent);
-//                    }
-//
-//                }
-//                catch(Exception e){
-//                    e.printStackTrace();
-//                    ErrorClass.showError(SignUpActivity.this, 27);
-//                    Intent intent = new Intent(SignUpActivity.this, SignUpActivity.class);
-//                    startActivity(intent);
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<ResponseBody> call, Throwable t) {
-//                ErrorClass.showError(SignUpActivity.this, 28);
-//            }
-//        });
+        JsonObject toUp = new JsonObject();
+        toUp.addProperty("oldPassword", currentPassword);
+        toUp.addProperty("newPassword", password);
+
+        StringClient client = ServiceGenerator.createService(StringClient.class, auCode);
+        Call<ResponseBody> call = client.changePassword(toUp);
+
+        call.enqueue (new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    int messageCode = response.code();
+                    if (messageCode == 200) {
+                        Notification.showMessage(ChangePasswordActivity.this, 7);
+                        onChangePasswordSuccess();
+                    } else if (messageCode == 400) {
+                        JSONObject data = new JSONObject(response.errorBody().string());
+                        int errorCode = data.getInt("code");
+                        if(errorCode == 1)
+                            Notification.showMessage(ChangePasswordActivity.this, 8);
+                        else if(errorCode == 8)
+                            Notification.showMessage(ChangePasswordActivity.this, 9);
+                        onChangePasswordFailed();
+                    } else {
+                        ErrorClass.showError(ChangePasswordActivity.this, 36);
+                        onChangePasswordFailed();
+                    }
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    onChangePasswordFailed();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                ErrorClass.showError(ChangePasswordActivity.this, 37);
+                onChangePasswordFailed();
+            }
+        });
+
     }
+
 }
 

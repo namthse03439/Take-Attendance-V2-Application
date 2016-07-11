@@ -234,4 +234,32 @@ public class GlobalVariable {
         return address;
     }
 
+    public static void checkConnected(final Activity activity) {
+        String username = "123";
+        String password = "321";
+        StringClient client = ServiceGenerator.createService(StringClient.class);
+        LoginClass up = new LoginClass(username, password, activity);
+
+        Call<ResponseBody> call = client.login(up);
+        try {
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    int messageCode = response.code();
+                    if(messageCode != 200 && messageCode != 400)
+                        Notification.showMessage(activity, 6);
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Notification.showMessage(activity, 6);
+                }
+            });
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            Notification.showMessage(activity, 6);
+        }
+    }
+
 }

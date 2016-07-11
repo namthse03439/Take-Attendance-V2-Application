@@ -28,6 +28,8 @@ import com.example.intern.takeattendanceapplicationv2t.BaseClass.StringClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.microedition.khronos.opengles.GL;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import okhttp3.ResponseBody;
@@ -51,7 +53,6 @@ public class LogInActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
 
-//        GlobalVariable.getFullTimeTable(this);
         if (GlobalVariable.obtainedAuCode(this)) {
 
             SharedPreferences pref = getApplicationContext().getSharedPreferences("ATK_pref", 0);
@@ -68,6 +69,7 @@ public class LogInActivity extends AppCompatActivity {
             startActivity(intent);
         }
 
+        GlobalVariable.checkConnected(LogInActivity.this);
 
         ButterKnife.inject(this);
 
