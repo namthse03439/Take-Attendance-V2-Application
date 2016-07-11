@@ -44,7 +44,8 @@
         <activity android:name=".DetailedInformationActivity" />
         <activity android:name=".RegisterNewDeviceActivity" />
         <activity android:name=".TimeTableActivity" />
-        <activity android:name=".ChangePasswordActivity"></activity>
+        <activity android:name=".ChangePasswordActivity" />
+        <activity android:name=".ForgotPasswordActivity"></activity>
     </application>
 
 </manifest>

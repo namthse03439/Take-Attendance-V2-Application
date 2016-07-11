@@ -249,8 +249,8 @@ public class TimeTableFragment extends Fragment {
 
             if (count % 2 == 0)
             {
-                gd.setColor(0xFFB3BBCC);
-                tvDate.setTextColor(Color.parseColor("#ffffff"));
+                gd.setColor(0xFFFFFFFF);
+                tvDate.setTextColor(Color.parseColor("#B3BBCC"));
             }
             else
             {
